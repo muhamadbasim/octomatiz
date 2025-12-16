@@ -69,6 +69,7 @@
     - **Validates: Requirements 2.3**
   - [x]* 4.3 Write property test for storytelling word count
 
+
     - **Property 2: Storytelling word count constraint**
     - **Validates: Requirements 2.4**
 
