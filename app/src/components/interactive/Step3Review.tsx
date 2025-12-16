@@ -1,11 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
+import { useContentGeneration } from '../../hooks/useContentGeneration';
+import { countWords, HEADLINE_MAX_LENGTH, STORYTELLING_MIN_WORDS, STORYTELLING_MAX_WORDS } from '../../lib/contentValidation';
+
+const MAX_REGENERATE = 3;
 
 export function Step3Review() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
   const [headline, setHeadline] = useState('');
   const [storytelling, setStorytelling] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  const {
+    isGenerating,
+    regenerate,
+    regenerateCount,
+    canRegenerate,
+    error: aiError,
+  } = useContentGeneration({
+    category: currentProject?.category || 'kuliner',
+    businessName: currentProject?.businessName || '',
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -17,36 +31,25 @@ export function Step3Review() {
 
   useEffect(() => {
     if (currentProject) {
-      // If no headline yet, generate AI content
-      if (!currentProject.headline) {
-        generateAIContent();
-      } else {
-        setHeadline(currentProject.headline);
-        setStorytelling(currentProject.storytelling || '');
-      }
+      // Load existing content from project
+      setHeadline(currentProject.headline || '');
+      setStorytelling(currentProject.storytelling || '');
     }
   }, [currentProject?.id]);
 
-  const generateAIContent = () => {
-    setIsGenerating(true);
-    // Simulate AI generation (in real app, call Gemini API)
-    setTimeout(() => {
-      const businessName = currentProject?.businessName || 'Produk Anda';
-      const category = currentProject?.category || 'kuliner';
-      
-      const generatedHeadline = category === 'kuliner'
-        ? `${businessName} - Cita Rasa Autentik yang Bikin Nagih!`
-        : `${businessName} - Kualitas Terbaik untuk Anda`;
-      
-      const generatedStory = category === 'kuliner'
-        ? `Dibuat dengan resep turun-temurun dan bahan pilihan berkualitas. Setiap sajian disiapkan dengan penuh cinta untuk memberikan pengalaman kuliner terbaik.\n\nRasakan kelezatan yang tak terlupakan di setiap gigitan!`
-        : `Produk berkualitas tinggi yang dirancang untuk memenuhi kebutuhan Anda. Dengan perhatian pada detail dan komitmen terhadap kepuasan pelanggan.\n\nPercayakan kebutuhan Anda pada kami!`;
-
-      setHeadline(generatedHeadline);
-      setStorytelling(generatedStory);
-      setIsGenerating(false);
-    }, 1500);
+  const handleRegenerate = async () => {
+    if (!currentProject?.productImage || !canRegenerate) return;
+    
+    // Call regenerate which will use the stored image
+    await regenerate();
   };
+
+  // Character/word count helpers
+  const headlineLength = headline.length;
+  const storyWordCount = countWords(storytelling);
+  const isHeadlineTooLong = headlineLength > HEADLINE_MAX_LENGTH;
+  const isStoryTooShort = storyWordCount < STORYTELLING_MIN_WORDS && storyWordCount > 0;
+  const isStoryTooLong = storyWordCount > STORYTELLING_MAX_WORDS;
 
   const handleContinue = () => {
     if (!currentProject) return;
@@ -94,48 +97,88 @@ export function Step3Review() {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-white ml-1 flex justify-between items-center">
                   Headline Utama
-                  <span className="text-xs text-primary font-normal bg-primary/10 px-2 py-0.5 rounded-full">AI Suggestion</span>
+                  <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${
+                    isHeadlineTooLong ? 'bg-red-500/10 text-red-400' : 'bg-primary/10 text-primary'
+                  }`}>
+                    {headlineLength}/{HEADLINE_MAX_LENGTH}
+                  </span>
                 </label>
-                <div className="group relative flex items-center w-full rounded-xl bg-surface-dark border border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm">
+                <div className={`group relative flex items-center w-full rounded-xl bg-surface-dark border transition-all shadow-sm ${
+                  isHeadlineTooLong 
+                    ? 'border-red-500 focus-within:ring-1 focus-within:ring-red-500' 
+                    : 'border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'
+                }`}>
                   <input
                     type="text"
                     className="w-full bg-transparent border-none p-4 pr-12 text-base font-medium text-white placeholder-text-muted focus:ring-0 focus:outline-none"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
+                    placeholder="Headline menarik untuk produk Anda"
                   />
                   <div className="absolute right-4 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none">
                     <span className="material-symbols-outlined text-[20px]">edit</span>
                   </div>
                 </div>
+                {isHeadlineTooLong && (
+                  <p className="text-red-400 text-xs ml-1">Headline terlalu panjang</p>
+                )}
               </div>
 
               {/* Storytelling Input */}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-white ml-1 flex justify-between items-center">
                   Cerita Produk (Storytelling)
-                  <span className="text-xs text-primary font-normal bg-primary/10 px-2 py-0.5 rounded-full">AI Suggestion</span>
+                  <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${
+                    isStoryTooShort || isStoryTooLong ? 'bg-red-500/10 text-red-400' : 'bg-primary/10 text-primary'
+                  }`}>
+                    {storyWordCount} kata ({STORYTELLING_MIN_WORDS}-{STORYTELLING_MAX_WORDS})
+                  </span>
                 </label>
-                <div className="group relative w-full rounded-xl bg-surface-dark border border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm">
+                <div className={`group relative w-full rounded-xl bg-surface-dark border transition-all shadow-sm ${
+                  isStoryTooShort || isStoryTooLong
+                    ? 'border-red-500 focus-within:ring-1 focus-within:ring-red-500'
+                    : 'border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'
+                }`}>
                   <textarea
                     className="w-full bg-transparent border-none p-4 pr-12 text-base leading-relaxed text-white placeholder-text-muted focus:ring-0 focus:outline-none resize-none"
                     rows={6}
                     value={storytelling}
                     onChange={(e) => setStorytelling(e.target.value)}
+                    placeholder="Ceritakan keunikan dan keunggulan produk Anda..."
                   />
                   <div className="absolute top-4 right-4 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none">
                     <span className="material-symbols-outlined text-[20px]">edit</span>
                   </div>
                 </div>
+                {isStoryTooShort && (
+                  <p className="text-red-400 text-xs ml-1">Cerita terlalu pendek (min. {STORYTELLING_MIN_WORDS} kata)</p>
+                )}
+                {isStoryTooLong && (
+                  <p className="text-red-400 text-xs ml-1">Cerita terlalu panjang (max. {STORYTELLING_MAX_WORDS} kata)</p>
+                )}
               </div>
 
               {/* Regenerate Button */}
-              <button
-                onClick={generateAIContent}
-                className="flex items-center justify-center gap-2 text-primary text-sm font-medium hover:underline"
-              >
-                <span className="material-symbols-outlined text-[18px]">refresh</span>
-                Generate ulang dengan AI
-              </button>
+              {currentProject?.productImage && (
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={!canRegenerate || isGenerating}
+                    className={`flex items-center justify-center gap-2 text-sm font-medium ${
+                      canRegenerate ? 'text-primary hover:underline' : 'text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">refresh</span>
+                    Generate ulang dengan AI
+                  </button>
+                  <span className="text-xs text-gray-500">
+                    {regenerateCount}/{MAX_REGENERATE} regenerasi digunakan
+                  </span>
+                  {aiError && (
+                    <span className="text-xs text-red-400">{aiError}</span>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>

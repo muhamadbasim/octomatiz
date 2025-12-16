@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
+import { useContentGeneration } from '../../hooks/useContentGeneration';
 
 export function Step2Capture() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { generate, isGenerating, content, error: aiError } = useContentGeneration({
+    category: currentProject?.category || 'kuliner',
+    businessName: currentProject?.businessName || '',
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -21,6 +28,28 @@ export function Step2Capture() {
     }
   }, [currentProject?.id]);
 
+  // Handle AI generation result
+  useEffect(() => {
+    if (content && currentProject && isScanning) {
+      // Save AI-generated content to project
+      updateProject(currentProject.id, {
+        productImage: capturedImage || undefined,
+        headline: content.headline,
+        storytelling: content.storytelling,
+      });
+      setCurrentStep(3);
+      window.location.href = `/create/step-3?id=${currentProject.id}`;
+    }
+  }, [content]);
+
+  // Handle AI error
+  useEffect(() => {
+    if (aiError && isScanning) {
+      setScanError(aiError);
+      setIsScanning(false);
+    }
+  }, [aiError]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -29,33 +58,40 @@ export function Step2Capture() {
     reader.onload = (event) => {
       const imageData = event.target?.result as string;
       setCapturedImage(imageData);
+      setScanError(null);
     };
     reader.readAsDataURL(file);
   };
 
   const handleCapture = () => {
-    // For now, open file picker (camera capture would need more setup)
     fileInputRef.current?.click();
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!capturedImage || !currentProject) return;
 
     setIsScanning(true);
+    setScanError(null);
     
-    // Save image and simulate AI processing
+    // Save image first
     updateProject(currentProject.id, { productImage: capturedImage });
-    setCurrentStep(3);
 
-    // Simulate scanning delay then navigate
-    setTimeout(() => {
-      window.location.href = `/create/step-3?id=${currentProject.id}`;
-    }, 2000);
+    // Call AI to analyze image
+    await generate(capturedImage);
   };
 
-  if (isScanning) {
+  const handleSkipAI = () => {
+    if (!capturedImage || !currentProject) return;
+    
+    // Save image and go to step 3 without AI
+    updateProject(currentProject.id, { productImage: capturedImage });
+    setCurrentStep(3);
+    window.location.href = `/create/step-3?id=${currentProject.id}`;
+  };
+
+  if (isScanning || isGenerating) {
     return (
-      <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center">
+      <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center px-6">
         <div className="relative mb-8">
           <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-primary">
             {capturedImage && (
@@ -73,6 +109,52 @@ export function Step2Capture() {
             <span className="font-bold">AI Sedang Menganalisis...</span>
           </div>
           <p className="text-gray-400 text-sm">Mengenali produk dan membuat konten</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state with retry
+  if (scanError) {
+    return (
+      <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center px-6">
+        <div className="relative mb-8">
+          <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-red-500/50">
+            {capturedImage && (
+              <img src={capturedImage} alt="Captured" className="w-full h-full object-cover opacity-50" />
+            )}
+          </div>
+        </div>
+        <div className="text-center max-w-sm">
+          <div className="flex items-center justify-center gap-2 text-red-400 mb-2">
+            <span className="material-symbols-outlined">error</span>
+            <span className="font-bold">Gagal Menganalisis</span>
+          </div>
+          <p className="text-gray-400 text-sm mb-6">{scanError}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleContinue}
+              className="btn-primary w-full"
+            >
+              <span className="material-symbols-outlined">refresh</span>
+              Coba Lagi
+            </button>
+            <button
+              onClick={handleSkipAI}
+              className="w-full py-3 rounded-full border border-white/20 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+            >
+              Lanjut Tanpa AI
+            </button>
+            <button
+              onClick={() => {
+                setScanError(null);
+                setCapturedImage(null);
+              }}
+              className="text-gray-400 text-sm hover:text-white transition-colors"
+            >
+              Ambil Foto Ulang
+            </button>
+          </div>
         </div>
       </div>
     );
