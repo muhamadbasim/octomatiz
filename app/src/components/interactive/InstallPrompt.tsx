@@ -9,7 +9,7 @@ interface InstallPromptProps {
   delayMs?: number;
 }
 
-export function InstallPrompt({ delayMs = 2000 }: InstallPromptProps) {
+export function InstallPrompt({ delayMs = 0 }: InstallPromptProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -26,10 +26,14 @@ export function InstallPrompt({ delayMs = 2000 }: InstallPromptProps) {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show prompt after short delay (2 seconds default)
-      setTimeout(() => {
+      // Show prompt immediately (or with optional delay)
+      if (delayMs > 0) {
+        setTimeout(() => {
+          setShowPrompt(true);
+        }, delayMs);
+      } else {
         setShowPrompt(true);
-      }, delayMs);
+      }
     };
 
     // Listen for app installed event
