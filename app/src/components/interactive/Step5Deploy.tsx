@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
-
-type DeploymentStage = 'creating-repo' | 'uploading' | 'building' | 'success';
+import { deployProject, type DeploymentProgress, type DeploymentStage } from '../../lib/deployService';
+import { generateWhatsAppShareUrl } from '../../lib/landingPageGenerator';
 
 interface ChecklistItem {
   id: DeploymentStage;
@@ -10,16 +10,19 @@ interface ChecklistItem {
 }
 
 const CHECKLIST: ChecklistItem[] = [
-  { id: 'creating-repo', label: 'Membuat Repository...', completedLabel: 'Repository dibuat' },
+  { id: 'generating', label: 'Membuat Halaman...', completedLabel: 'Halaman dibuat' },
   { id: 'uploading', label: 'Mengupload Foto...', completedLabel: 'Foto diupload' },
   { id: 'building', label: 'Cloudflare Building...', completedLabel: 'Build selesai' },
 ];
 
 export function Step5Deploy() {
   const { currentProject, loadProject, updateProject } = useProjectContext();
-  const [stage, setStage] = useState<DeploymentStage>('creating-repo');
+  const [stage, setStage] = useState<DeploymentStage>('generating');
   const [progress, setProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [deployStarted, setDeployStarted] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -29,45 +32,30 @@ export function Step5Deploy() {
     }
   }, []);
 
+  const handleProgress = useCallback((progressData: DeploymentProgress) => {
+    setStage(progressData.stage);
+    setProgress(progressData.progress);
+  }, []);
+
   useEffect(() => {
-    if (!currentProject) return;
+    if (!currentProject || deployStarted) return;
+    setDeployStarted(true);
 
-    // Simulate deployment stages
-    const stages: { stage: DeploymentStage; duration: number; progress: number }[] = [
-      { stage: 'creating-repo', duration: 1500, progress: 25 },
-      { stage: 'uploading', duration: 2000, progress: 50 },
-      { stage: 'building', duration: 2500, progress: 75 },
-    ];
-
-    let currentIndex = 0;
-    const runStage = () => {
-      if (currentIndex >= stages.length) {
-        // Deployment complete
-        setProgress(100);
-        setTimeout(() => {
-          const domain = `${currentProject.businessName.toLowerCase().replace(/\s+/g, '-')}.octomatiz.site`;
-          updateProject(currentProject.id, {
-            status: 'live',
-            deployedUrl: `https://${domain}`,
-            domain,
-          });
-          setIsSuccess(true);
-        }, 500);
-        return;
+    // Start deployment
+    deployProject(currentProject, handleProgress).then((result) => {
+      if (result.success && result.url && result.domain) {
+        updateProject(currentProject.id, {
+          status: 'live',
+          deployedUrl: result.url,
+          domain: result.domain,
+        });
+        if (result.html) {
+          setGeneratedHtml(result.html);
+        }
+        setIsSuccess(true);
       }
-
-      const { stage, duration, progress } = stages[currentIndex];
-      setStage(stage);
-      setProgress(progress);
-
-      setTimeout(() => {
-        currentIndex++;
-        runStage();
-      }, duration);
-    };
-
-    runStage();
-  }, [currentProject?.id]);
+    });
+  }, [currentProject?.id, deployStarted, handleProgress, updateProject]);
 
   const getStageIndex = (s: DeploymentStage) => CHECKLIST.findIndex(c => c.id === s);
   const currentStageIndex = getStageIndex(stage);
@@ -81,10 +69,36 @@ export function Step5Deploy() {
   };
 
   const handleShareWhatsApp = () => {
-    const text = `Hai! Website ${businessName} sudah online di https://${domain}`;
     const waNumber = currentProject?.whatsapp || '';
-    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`, '_blank');
+    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, `https://${domain}`);
+    window.open(shareUrl, '_blank');
   };
+
+  const handlePreview = () => {
+    setShowPreview(true);
+  };
+
+  // Preview Modal
+  if (showPreview && generatedHtml) {
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex flex-col">
+        <div className="flex items-center justify-between p-4 bg-surface-dark border-b border-white/10">
+          <h3 className="text-white font-medium">Preview Landing Page</h3>
+          <button
+            onClick={() => setShowPreview(false)}
+            className="p-2 rounded-full hover:bg-white/10 text-white"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <iframe
+          srcDoc={generatedHtml}
+          className="flex-1 w-full bg-white"
+          title="Landing Page Preview"
+        />
+      </div>
+    );
+  }
 
   if (isSuccess) {
     return (
@@ -146,14 +160,13 @@ export function Step5Deploy() {
             <span>Share ke WhatsApp</span>
           </button>
 
-          <a
-            href={`https://${domain}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full rounded-full border border-white/20 bg-transparent p-4 hover:bg-white/5 transition-all active:scale-[0.98] text-center"
+          <button
+            onClick={handlePreview}
+            className="w-full rounded-full border border-white/20 bg-transparent p-4 hover:bg-white/5 transition-all active:scale-[0.98] text-center flex items-center justify-center gap-2"
           >
-            <span className="text-white text-base font-medium">Lihat Website</span>
-          </a>
+            <span className="material-symbols-outlined text-white">visibility</span>
+            <span className="text-white text-base font-medium">Preview Website</span>
+          </button>
 
           <a href="/" className="text-center text-primary text-sm font-medium mt-2 hover:underline">
             Kembali ke Dashboard

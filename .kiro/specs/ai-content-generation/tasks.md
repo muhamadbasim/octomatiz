@@ -69,6 +69,7 @@
 
 - [x] 4. Create content validation utilities
 
+
   - [x] 4.1 Create headline and storytelling validators
 
     - Create validation functions in `src/lib/contentValidation.ts`
