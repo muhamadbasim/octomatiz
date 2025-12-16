@@ -1,4 +1,6 @@
 ---
+import { OfflineIndicator } from './interactive/OfflineIndicator';
+
 interface Props {
   showBack?: boolean;
   title?: string;
@@ -17,9 +19,9 @@ const { showBack = false, title, step } = Astro.props;
     ) : (
       <div class="flex items-center gap-2">
         <div class="bg-primary/20 p-1.5 rounded-lg">
-          <span class="material-symbols-outlined text-primary text-[20px]">rocket_launch</span>
+          <img src="/favicon.svg" alt="OCTOmatiz" class="w-5 h-5" />
         </div>
-        <h1 class="text-white text-lg font-bold tracking-tight">QuickLaunch</h1>
+        <h1 class="text-white text-lg font-bold tracking-tight">OCTOmatiz</h1>
       </div>
     )}
     
@@ -35,13 +37,9 @@ const { showBack = false, title, step } = Astro.props;
     
     {!showBack && !title && (
       <div class="flex items-center gap-3">
-        <!-- Connection Status -->
-        <div class="hidden xs:flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-full border border-white/10">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
-          <span class="text-[10px] font-medium text-white/70 uppercase tracking-wide">Online</span>
+        <!-- Connection Status (React Island) -->
+        <div class="hidden xs:flex">
+          <OfflineIndicator client:idle />
         </div>
         <!-- Profile -->
         <div class="relative group cursor-pointer">

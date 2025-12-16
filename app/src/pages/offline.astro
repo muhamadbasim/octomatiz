@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Offline" showNav={false}>
+  <div class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+    <!-- Offline Icon -->
+    <div class="relative mb-8">
+      <div class="size-32 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-text-muted text-6xl">cloud_off</span>
+      </div>
+      <div class="absolute -bottom-2 -right-2 size-12 rounded-full bg-primary/20 flex items-center justify-center">
+        <img src="/favicon.svg" alt="OCTOmatiz" class="w-6 h-6" />
+      </div>
+    </div>
+    
+    <!-- Message -->
+    <h1 class="text-2xl font-bold text-white mb-3">Kamu Sedang Offline</h1>
+    <p class="text-text-muted text-base max-w-xs mb-8">
+      Sepertinya koneksi internet kamu terputus. Cek koneksi dan coba lagi.
+    </p>
+    
+    <!-- Retry Button -->
+    <button 
+      onclick="window.location.reload()"
+      class="btn-primary px-8"
+    >
+      <span class="material-symbols-outlined text-xl">refresh</span>
+      <span>Coba Lagi</span>
+    </button>
+    
+    <!-- Tips -->
+    <div class="mt-12 p-4 bg-surface-dark rounded-xl border border-white/5 max-w-sm">
+      <p class="text-sm text-text-muted">
+        <span class="text-primary font-medium">Tips:</span> Halaman yang sudah pernah kamu buka akan tetap bisa diakses saat offline.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

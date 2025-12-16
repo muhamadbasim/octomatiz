@@ -1,7 +1,7 @@
-# Project Context - UMKM Quick-Launch PWA
+# Project Context - OCTOmatiz PWA
 
 ## Overview
-This is a mobile-first Progressive Web App (PWA) for freelance digital marketers to build and deploy landing pages for MSMEs (UMKM) in under 10 minutes.
+**OCTOmatiz** is a mobile-first Progressive Web App (PWA) for freelance digital marketers to build and deploy landing pages for MSMEs (UMKM) in under 10 minutes. The octopus branding represents the app's multiple capabilities working together seamlessly.
 
 ## Tech Stack
 
