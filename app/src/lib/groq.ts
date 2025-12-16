@@ -1,10 +1,12 @@
 import type { BusinessCategory } from '../types/project';
+import type { GeneratedContent, GeminiError, GeminiResult } from './gemini';
 
-// Gemini API configuration
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+// Groq API configuration
+// Using meta-llama/llama-4-scout-17b-16e-instruct for vision tasks
+const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Category-specific prompt templates
+// Category-specific prompt templates (same as Gemini)
 const CATEGORY_PROMPTS: Record<BusinessCategory, string> = {
   kuliner: 'makanan/minuman dengan penekanan pada rasa, kesegaran, dan selera makan',
   fashion: 'produk fashion dengan penekanan pada gaya, kualitas bahan, dan tren terkini',
@@ -12,28 +14,10 @@ const CATEGORY_PROMPTS: Record<BusinessCategory, string> = {
   kerajinan: 'kerajinan tangan dengan penekanan pada keunikan, kualitas pengerjaan, dan nilai seni',
 };
 
-export interface GeneratedContent {
-  productType: string;
-  features: string[];
-  headline: string;
-  storytelling: string;
-}
-
-export interface GeminiError {
-  code: 'NETWORK_ERROR' | 'INVALID_IMAGE' | 'API_ERROR' | 'RATE_LIMIT' | 'PARSE_ERROR';
-  message: string;
-}
-
-export interface GeminiResult {
-  success: boolean;
-  data?: GeneratedContent;
-  error?: GeminiError;
-}
-
 /**
- * Build the prompt for Gemini API based on category and business name
+ * Build the prompt for Groq API based on category and business name
  */
-export function buildPrompt(category: BusinessCategory, businessName: string): string {
+export function buildGroqPrompt(category: BusinessCategory, businessName: string): string {
   const categoryContext = CATEGORY_PROMPTS[category];
   
   return `Kamu adalah copywriter profesional untuk UMKM Indonesia.
@@ -60,13 +44,12 @@ Berikan response dalam format JSON yang valid (tanpa markdown code block):
 }
 
 /**
- * Parse Gemini API response to extract generated content
+ * Parse Groq API response to extract generated content
  */
-export function parseGeminiResponse(responseText: string): GeneratedContent {
-  // Clean up response - remove markdown code blocks if present
+export function parseGroqResponse(responseText: string): GeneratedContent {
   let cleanText = responseText.trim();
   
-  // Remove ```json and ``` markers
+  // Remove markdown code blocks if present
   if (cleanText.startsWith('```json')) {
     cleanText = cleanText.slice(7);
   } else if (cleanText.startsWith('```')) {
@@ -79,7 +62,6 @@ export function parseGeminiResponse(responseText: string): GeneratedContent {
 
   const parsed = JSON.parse(cleanText);
   
-  // Validate required fields
   if (!parsed.productType || !parsed.headline || !parsed.storytelling) {
     throw new Error('Missing required fields in response');
   }
@@ -92,10 +74,11 @@ export function parseGeminiResponse(responseText: string): GeneratedContent {
   };
 }
 
+
 /**
- * Call Gemini Vision API to analyze image and generate content
+ * Call Groq Vision API to analyze image and generate content
  */
-export async function analyzeImageWithGemini(
+export async function analyzeImageWithGroq(
   apiKey: string,
   imageBase64: string,
   category: BusinessCategory,
@@ -106,53 +89,56 @@ export async function analyzeImageWithGemini(
       success: false,
       error: {
         code: 'API_ERROR',
-        message: 'API key tidak dikonfigurasi',
+        message: 'Groq API key tidak dikonfigurasi',
       },
     };
   }
 
-  const prompt = buildPrompt(category, businessName);
+  const prompt = buildGroqPrompt(category, businessName);
   
-  // Remove data URL prefix if present
-  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+  // Ensure proper data URL format
+  let imageUrl = imageBase64;
+  if (!imageBase64.startsWith('data:')) {
+    imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+  }
 
   const requestBody = {
-    contents: [
+    model: GROQ_MODEL,
+    messages: [
       {
-        parts: [
+        role: 'user',
+        content: [
           {
+            type: 'text',
             text: prompt,
           },
           {
-            inline_data: {
-              mime_type: 'image/jpeg',
-              data: base64Data,
+            type: 'image_url',
+            image_url: {
+              url: imageUrl,
             },
           },
         ],
       },
     ],
-    generationConfig: {
-      temperature: 0.7,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 1024,
-    },
+    temperature: 0.7,
+    max_tokens: 1024,
   };
 
   try {
-    const response = await fetch(
-      `${GEMINI_API_URL}/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Groq API error:', response.status, errorData);
+      
       if (response.status === 429) {
         return {
           success: false,
@@ -167,7 +153,7 @@ export async function analyzeImageWithGemini(
           success: false,
           error: {
             code: 'API_ERROR',
-            message: 'API key tidak valid',
+            message: 'Groq API key tidak valid',
           },
         };
       }
@@ -175,38 +161,25 @@ export async function analyzeImageWithGemini(
         success: false,
         error: {
           code: 'API_ERROR',
-          message: `API error: ${response.status}`,
+          message: errorData?.error?.message || `Groq API error: ${response.status}`,
         },
       };
     }
 
     const data = await response.json();
-    
-    // Extract text from Gemini response
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const textContent = data.choices?.[0]?.message?.content;
     
     if (!textContent) {
-      // Check if image was blocked or unclear
-      const blockReason = data.candidates?.[0]?.finishReason;
-      if (blockReason === 'SAFETY' || blockReason === 'OTHER') {
-        return {
-          success: false,
-          error: {
-            code: 'INVALID_IMAGE',
-            message: 'Foto tidak dapat diproses. Coba foto produk yang lebih jelas.',
-          },
-        };
-      }
       return {
         success: false,
         error: {
           code: 'API_ERROR',
-          message: 'Tidak ada response dari AI',
+          message: 'Tidak ada response dari Groq AI',
         },
       };
     }
 
-    const content = parseGeminiResponse(textContent);
+    const content = parseGroqResponse(textContent);
     
     return {
       success: true,
@@ -223,7 +196,6 @@ export async function analyzeImageWithGemini(
       };
     }
     
-    // Network error
     return {
       success: false,
       error: {

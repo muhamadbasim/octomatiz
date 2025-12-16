@@ -3,13 +3,13 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const apiKey = import.meta.env.GEMINI_API_KEY;
+  const apiKey = import.meta.env.GROQ_API_KEY;
   
   if (!apiKey) {
     return new Response(
       JSON.stringify({
         success: false,
-        message: 'GEMINI_API_KEY tidak ditemukan di environment variables',
+        message: 'GROQ_API_KEY tidak ditemukan di environment variables',
         keyExists: false,
       }),
       {
@@ -22,12 +22,17 @@ export const GET: APIRoute = async () => {
   // Test API key dengan simple request
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      'https://api.groq.com/openai/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Say "API key is valid" in Indonesian' }] }],
+          model: 'llama-3.1-8b-instant',
+          messages: [{ role: 'user', content: 'Say "API key is valid" in Indonesian' }],
+          max_tokens: 50,
         }),
       }
     );
@@ -50,12 +55,12 @@ export const GET: APIRoute = async () => {
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+    const text = data.choices?.[0]?.message?.content || 'No response';
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Gemini API key valid!',
+        message: 'Groq API key valid!',
         response: text,
         keyExists: true,
         keyPreview: `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`,

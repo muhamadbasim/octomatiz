@@ -5,6 +5,7 @@
 
 
 
+
   - [ ] 1.1 Create Gemini service utilities
     - Create `src/lib/gemini.ts` with API client
     - Implement prompt builder with category templates
@@ -18,11 +19,15 @@
 
 
 
+
+
     - **Property 5: API response parsing**
     - **Validates: Requirements 1.2**
 
 
-- [ ] 2. Create API route for image analysis
+
+- [x] 2. Create API route for image analysis
+
   - [ ] 2.1 Create `/api/analyze` endpoint
     - Create `src/pages/api/analyze.ts`
 
@@ -30,8 +35,10 @@
 
     - Handle POST requests with image and category
     - Call Gemini API securely
+
     - _Requirements: 5.2, 5.3_
-  - [ ] 2.2 Implement error handling
+  - [x] 2.2 Implement error handling
+
     - Handle network errors, invalid images, API errors
     - Return user-friendly error messages
     - _Requirements: 1.3, 1.4, 5.3_
@@ -40,13 +47,16 @@
 
 
 - [ ] 3. Create content generation hook
-  - [ ] 3.1 Create useContentGeneration hook
+  - [x] 3.1 Create useContentGeneration hook
+
     - Create `src/hooks/useContentGeneration.ts`
     - Manage generation state and regeneration count
     - Implement 3-attempt limit
+
     - _Requirements: 3.1, 3.3_
   - [ ]* 3.2 Write property test for regeneration limit
     - **Property 3: Regeneration limit enforcement**
+
     - **Validates: Requirements 3.3**
 
 
@@ -54,8 +64,13 @@
 
 
 
-- [ ] 4. Create content validation utilities
-  - [ ] 4.1 Create headline and storytelling validators
+
+
+
+- [x] 4. Create content validation utilities
+
+  - [x] 4.1 Create headline and storytelling validators
+
     - Create validation functions in `src/lib/contentValidation.ts`
     - Implement headline length check (max 60 chars)
 

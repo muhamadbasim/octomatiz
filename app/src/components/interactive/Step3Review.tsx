@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
-import { useContentGeneration } from '../../hooks/useContentGeneration';
 import { countWords, HEADLINE_MAX_LENGTH, STORYTELLING_MIN_WORDS, STORYTELLING_MAX_WORDS } from '../../lib/contentValidation';
+import type { GeneratedContent, GeminiResult } from '../../lib/gemini';
 
 const MAX_REGENERATE = 3;
 
@@ -9,17 +9,11 @@ export function Step3Review() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
   const [headline, setHeadline] = useState('');
   const [storytelling, setStorytelling] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [regenerateCount, setRegenerateCount] = useState(0);
+  const [aiError, setAiError] = useState<string | null>(null);
 
-  const {
-    isGenerating,
-    regenerate,
-    regenerateCount,
-    canRegenerate,
-    error: aiError,
-  } = useContentGeneration({
-    category: currentProject?.category || 'kuliner',
-    businessName: currentProject?.businessName || '',
-  });
+  const canRegenerate = regenerateCount < MAX_REGENERATE && !!currentProject?.productImage;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -37,12 +31,43 @@ export function Step3Review() {
     }
   }, [currentProject?.id]);
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = useCallback(async () => {
     if (!currentProject?.productImage || !canRegenerate) return;
     
-    // Call regenerate which will use the stored image
-    await regenerate();
-  };
+    setIsGenerating(true);
+    setAiError(null);
+    setRegenerateCount(prev => prev + 1);
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: currentProject.productImage,
+          category: currentProject.category,
+          businessName: currentProject.businessName,
+        }),
+      });
+
+      const result: GeminiResult = await response.json();
+
+      if (result.success && result.data) {
+        setHeadline(result.data.headline);
+        setStorytelling(result.data.storytelling);
+        // Also save to project
+        updateProject(currentProject.id, {
+          headline: result.data.headline,
+          storytelling: result.data.storytelling,
+        });
+      } else {
+        setAiError(result.error?.message || 'Gagal menghasilkan konten baru');
+      }
+    } catch (err) {
+      setAiError('Koneksi gagal. Periksa internet dan coba lagi.');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [currentProject, canRegenerate, updateProject]);
 
   // Character/word count helpers
   const headlineLength = headline.length;
