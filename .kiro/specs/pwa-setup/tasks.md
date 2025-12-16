@@ -117,6 +117,7 @@
 
 - [x] 8. Checkpoint - Verify PWA functionality
 
+
   - Ensure all tests pass, ask the user if questions arise.
   - Test PWA installation on mobile device
   - Test offline functionality
