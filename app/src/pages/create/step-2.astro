@@ -1,70 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Step2Wrapper } from '../../components/interactive/Step2Wrapper';
 ---
 
 <BaseLayout title="AI Capture" showNav={false}>
-  <div class="relative min-h-screen bg-background-dark">
-    <!-- Camera Feed Background (placeholder) -->
-    <div class="absolute inset-0 w-full h-full z-0">
-      <img 
-        alt="Camera viewfinder" 
-        class="w-full h-full object-cover"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmlduWIKSWkGBmsvQTaVFOyaV3Gac5BGTpwxferhizV4xGnqoYPgeGNDrtigD3JApqWgoGu5y_Ev7K3JB9cd2q3H5YhAYze5pbajW5rycTlYoL18Qp_aUD3tINvkgJXwuXfAvSSAZl3plvMXS_oS0SGD4_B4KCb6c--ds2fREPOppK-QotJn7ZpaEpCYLolMouCC7O0P6WzQPu7mtrzjF2-D99kOVG3KpbpWW0PkwlDfAncBW8fBCprVpQ-O-TiB578e3Icph89Oz5"
-      />
-      <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
-    </div>
-    
-    <!-- Top App Bar -->
-    <div class="relative z-10 flex items-center justify-between p-6 pt-8">
-      <a href="/create/step-1" class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40 transition-colors">
-        <span class="material-symbols-outlined">arrow_back</span>
-      </a>
-      <button class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40 transition-colors">
-        <span class="material-symbols-outlined">flash_on</span>
-      </button>
-    </div>
-    
-    <!-- Instructional Overlay -->
-    <div class="relative z-10 mt-8 flex justify-center px-4">
-      <div class="bg-black/40 backdrop-blur-lg border border-white/10 rounded-full px-5 py-3 max-w-[90%] text-center shadow-lg">
-        <p class="text-white text-sm font-medium leading-tight">
-          Foto produk unggulan dari jarak dekat dan pencahayaan terang.
-        </p>
-      </div>
-    </div>
-    
-    <!-- Focus Reticle -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-48 border border-white/30 rounded-lg pointer-events-none z-0">
-      <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-lg"></div>
-      <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-lg"></div>
-      <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-lg"></div>
-      <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-lg"></div>
-    </div>
-    
-    <!-- Bottom Controls -->
-    <div class="absolute bottom-0 left-0 right-0 z-20 pb-10 pt-20 px-8 flex items-center justify-between bg-gradient-to-t from-background-dark/95 to-transparent">
-      <!-- Gallery Button -->
-      <button class="flex flex-col items-center gap-1 group/btn">
-        <div class="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
-          <span class="material-symbols-outlined">photo_library</span>
-        </div>
-        <span class="text-[10px] font-medium text-white/80">Galeri</span>
-      </button>
-      
-      <!-- Shutter Button -->
-      <a href="/create/step-2-scanning" class="relative group/shutter">
-        <div class="size-20 rounded-full border-4 border-white flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform group-active/shutter:scale-95">
-          <div class="size-16 rounded-full bg-primary shadow-inner"></div>
-        </div>
-      </a>
-      
-      <!-- Tips Button -->
-      <button class="flex flex-col items-center gap-1 group/btn">
-        <div class="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
-          <span class="material-symbols-outlined">lightbulb</span>
-        </div>
-        <span class="text-[10px] font-medium text-white/80">Tips</span>
-      </button>
-    </div>
-  </div>
+  <Step2Wrapper client:load />
 </BaseLayout>
+
+<style>
+  @keyframes scan {
+    0% { top: 0; }
+    50% { top: calc(100% - 4px); }
+    100% { top: 0; }
+  }
+  :global(.animate-scan) {
+    animation: scan 2s ease-in-out infinite;
+  }
+</style>

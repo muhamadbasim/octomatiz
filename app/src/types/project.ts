@@ -1,5 +1,7 @@
 export type ProjectStatus = 'draft' | 'building' | 'live';
 export type BusinessCategory = 'kuliner' | 'fashion' | 'jasa' | 'kerajinan';
+export type TemplateStyle = 'simple' | 'warm' | 'modern';
+export type ColorTheme = 'green' | 'blue' | 'amber' | 'pink';
 
 export interface Project {
   id: string;
@@ -22,8 +24,8 @@ export interface Project {
   storytelling: string;
 
   // Step 4: Design & Theme
-  template: string;
-  colorTheme: string;
+  template: TemplateStyle;
+  colorTheme: ColorTheme;
 
   // Step 5: Deployment
   deployedUrl?: string;
@@ -40,7 +42,7 @@ export const DEFAULT_PROJECT: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = 
   headline: '',
   storytelling: '',
   template: 'simple',
-  colorTheme: '#36e27b',
+  colorTheme: 'green',
 };
 
 export function generateProjectId(): string {
