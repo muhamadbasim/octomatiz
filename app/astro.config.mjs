@@ -7,7 +7,7 @@ import AstroPWA from '@vite-pwa/astro';
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'static',
+  output: 'hybrid', // hybrid allows both static pages and API routes
   adapter: cloudflare(),
   integrations: [
     react(),
@@ -74,8 +74,9 @@ export default defineConfig({
             },
           },
         ],
-        // Offline fallback
+        // Offline fallback - only for navigation requests, not API
         navigateFallback: '/offline',
+        navigateFallbackDenylist: [/^\/api\//], // Don't fallback API routes to offline page
       },
       devOptions: {
         enabled: true,
