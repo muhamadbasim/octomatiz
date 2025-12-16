@@ -4,11 +4,24 @@ import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
  * Simple Clean Template
  * Minimalist design suitable for all business types
  */
+/**
+ * Format phone number with Indonesia country code
+ */
+function formatWhatsAppNumber(phoneNumber: string): string {
+  let cleanNumber = phoneNumber.replace(/\D/g, '');
+  if (cleanNumber.startsWith('0')) {
+    cleanNumber = '62' + cleanNumber.substring(1);
+  } else if (!cleanNumber.startsWith('62')) {
+    cleanNumber = '62' + cleanNumber;
+  }
+  return cleanNumber;
+}
+
 export const renderSimpleTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
-  const whatsappLink = `https://wa.me/${data.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${data.businessName}, saya tertarik dengan produk Anda!`)}`;
+  const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya tertarik dengan produk Anda!`)}`;
   
   return `<!DOCTYPE html>
 <html lang="id">

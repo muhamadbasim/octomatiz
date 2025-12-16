@@ -4,11 +4,24 @@ import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
  * Warm Culinary Template
  * Warm design suitable for food and culinary businesses
  */
+/**
+ * Format phone number with Indonesia country code
+ */
+function formatWhatsAppNumber(phoneNumber: string): string {
+  let cleanNumber = phoneNumber.replace(/\D/g, '');
+  if (cleanNumber.startsWith('0')) {
+    cleanNumber = '62' + cleanNumber.substring(1);
+  } else if (!cleanNumber.startsWith('62')) {
+    cleanNumber = '62' + cleanNumber;
+  }
+  return cleanNumber;
+}
+
 export const renderWarmTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
-  const whatsappLink = `https://wa.me/${data.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${data.businessName}, saya mau pesan!`)}`;
+  const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya mau pesan!`)}`;
   
   return `<!DOCTYPE html>
 <html lang="id">

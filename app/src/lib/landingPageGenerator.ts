@@ -47,6 +47,25 @@ export function generateLandingPage(project: Project): GeneratedPage {
 }
 
 /**
+ * Format phone number with Indonesia country code
+ */
+export function formatWhatsAppNumber(phoneNumber: string): string {
+  // Remove all non-digits
+  let cleanNumber = phoneNumber.replace(/\D/g, '');
+  
+  // If starts with 0, replace with 62 (Indonesia)
+  if (cleanNumber.startsWith('0')) {
+    cleanNumber = '62' + cleanNumber.substring(1);
+  }
+  // If doesn't start with country code, add 62
+  else if (!cleanNumber.startsWith('62')) {
+    cleanNumber = '62' + cleanNumber;
+  }
+  
+  return cleanNumber;
+}
+
+/**
  * Generate WhatsApp share URL
  */
 export function generateWhatsAppShareUrl(
@@ -55,8 +74,8 @@ export function generateWhatsAppShareUrl(
   deployedUrl: string
 ): string {
   const message = `Hai! Website ${businessName} sudah online di ${deployedUrl}`;
-  const cleanNumber = phoneNumber.replace(/\D/g, '');
-  return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+  const formattedNumber = formatWhatsAppNumber(phoneNumber);
+  return `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
 }
 
 /**

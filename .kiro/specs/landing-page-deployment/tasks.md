@@ -79,6 +79,7 @@
     - Simulate deployment stages with progress
     - Generate mock URL based on business name
 
+
     - _Requirements: 3.1, 3.2_
   - [ ] 4.2 Create deploy API route
     - Create `src/pages/api/deploy.ts`
