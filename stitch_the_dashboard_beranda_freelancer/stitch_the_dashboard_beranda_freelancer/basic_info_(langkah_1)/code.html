@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Basic Info - Langkah 1</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563EB", // Electric Blue
+                        "success": "#25D366", // WhatsApp Green
+                        "background-light": "#F8FAFC", // Off-White
+                        "text-main": "#1E293B", // Dark Gray
+                        "background-dark": "#0f172a", // Slate 900 (adjusted for blue theme)
+                        "surface-dark": "#1e293b", // Slate 800
+                        "border-dark": "#334155", // Slate 700
+                        "text-secondary": "#94a3b8", // Slate 400
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<div class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-border-dark/10 dark:border-border-dark/30 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<div class="text-text-main dark:text-white flex size-12 shrink-0 items-center justify-start cursor-pointer transition-transform active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Langkah 1</h2>
+</div>
+<div class="flex-1 flex flex-col px-4 pt-4 pb-32">
+<h1 class="text-text-main dark:text-white tracking-tight text-[32px] font-bold leading-tight text-left pb-6 pt-2">
+                Siapa Klienmu?
+            </h1>
+<div class="flex flex-col gap-6">
+<label class="flex flex-col w-full">
+<p class="text-text-main dark:text-white text-base font-medium leading-normal pb-2">Nama Bisnis</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-text-main dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark focus:border-primary h-14 placeholder:text-gray-400 dark:placeholder:text-text-secondary px-[15px] text-base font-normal leading-normal transition-all" placeholder="Contoh: Sate Maranggi Pak Joyo" type="text" value=""/>
+</label>
+<label class="flex flex-col w-full">
+<p class="text-text-main dark:text-white text-base font-medium leading-normal pb-2">Nomor WhatsApp</p>
+<div class="flex w-full items-stretch rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all">
+<div class="flex items-center justify-center pl-4 pr-3 border-r border-gray-300 dark:border-border-dark bg-gray-50 dark:bg-[#151c18]">
+<img alt="Flag" class="w-6 h-auto mr-2 rounded-sm shadow-sm" data-alt="Indonesian Flag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcJRMxzp6KMSiqRftOma4qpN_5tPELM3OucppyFUMI_GqGEdug6K5j7arDECBrMrd6dA0RRXOky6doI_wRn7zO9nrdfYVg2lTLCEpjFzjtUfXubHNQ1_QTt16YBYIexcGT3hzkjs9D3HUyvAvQ0ijhuFA5WF5O77YmwypvgyiYUE7qdVOQGnhkuq6EaIKMWz3X6gVga8lFRG19DfjY6bKeexIc7vy-HMOtt6lV8O7FNphBVQ5bxrFGNMk4D3x4rnpdvvl79qj2v3_t"/>
+<span class="text-text-main dark:text-white font-medium">+62</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 bg-transparent border-none text-text-main dark:text-white focus:outline-0 focus:ring-0 h-14 placeholder:text-gray-400 dark:placeholder:text-text-secondary px-[15px] text-base font-normal leading-normal" placeholder="812-3456-7890" type="tel" value=""/>
+<div class="flex items-center justify-center pr-4 text-success">
+<span class="material-symbols-outlined" style="font-size: 24px;">chat</span>
+</div>
+</div>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-normal leading-normal pt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                        Nomor ini akan jadi tombol pemesanan
+                    </p>
+</label>
+<div class="flex flex-col w-full">
+<p class="text-text-main dark:text-white text-base font-medium leading-normal pb-3">Kategori Bisnis</p>
+<div class="grid grid-cols-2 gap-3">
+<label class="cursor-pointer group relative">
+<input checked="" class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center justify-center rounded-xl border border-primary bg-primary/10 peer-checked:bg-primary peer-checked:text-white text-primary dark:text-primary py-4 px-3 transition-all">
+<span class="font-bold text-base text-center w-full block">Kuliner</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center justify-center rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark hover:border-primary/50 text-gray-600 dark:text-white py-4 px-3 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all">
+<span class="font-medium peer-checked:font-bold text-base text-center w-full block">Fashion</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center justify-center rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark hover:border-primary/50 text-gray-600 dark:text-white py-4 px-3 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all">
+<span class="font-medium peer-checked:font-bold text-base text-center w-full block">Jasa</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center justify-center rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark hover:border-primary/50 text-gray-600 dark:text-white py-4 px-3 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary transition-all">
+<span class="font-medium peer-checked:font-bold text-base text-center w-full block">Kerajinan</span>
+</div>
+</label>
+</div>
+</div>
+<div class="flex flex-col w-full">
+<p class="text-text-main dark:text-white text-base font-medium leading-normal pb-2">Lokasi Bisnis</p>
+<div class="flex w-full items-stretch rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all relative">
+<input class="form-input flex w-full min-w-0 flex-1 bg-transparent border-none text-text-main dark:text-white focus:outline-0 focus:ring-0 h-14 placeholder:text-gray-400 dark:placeholder:text-text-secondary px-[15px] pr-14 text-base font-normal leading-normal" placeholder="Cari kota atau kecamatan..." type="text"/>
+<button class="absolute right-0 top-0 h-14 w-14 flex items-center justify-center text-primary hover:bg-primary/5 active:scale-95 transition-all" title="Deteksi Lokasi Otomatis" type="button">
+<span class="material-symbols-outlined" style="font-size: 24px;">my_location</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent pt-8 z-20">
+<button class="flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-14 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors active:scale-[0.98]">
+<span>Lanjut ke Foto</span>
+<span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+</button>
+</div>
+</div>
+
+</body></html>

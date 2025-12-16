@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deployment Status</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#36e27b",
+                        "primary-hover": "#2bc468",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#112117",
+                        "surface-dark": "#1c2b22",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.5rem", 
+                        "xl": "2rem", 
+                        "2xl": "3rem",
+                        "full": "9999px"
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* CSS-only State Toggle Logic */
+        #state-loading:checked ~ .view-success { display: none; }
+        #state-loading:checked ~ .view-loading { display: flex; }
+        
+        #state-success:checked ~ .view-loading { display: none; }
+        #state-success:checked ~ .view-success { display: flex; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #112117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #36e27b;
+            border-radius: 10px;
+        }
+
+        /* Checkbox transition */
+        .checklist-item input:checked + div .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .checklist-item input:checked + div .spinner-icon {
+            opacity: 0;
+            transform: scale(0);
+        }
+        .checklist-item p {
+            transition: color 0.3s ease;
+        }
+        .checklist-item input:checked ~ p {
+            color: #36e27b;
+        }
+
+        /* Circular Progress */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-black">
+<!-- State Controls (Radio Inputs) -->
+<input checked="" class="hidden" id="state-loading" name="state" type="radio"/>
+<input class="hidden" id="state-success" name="state" type="radio"/>
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark border-x border-white/5">
+<!-- Dev Toggle Switch (Visible for demo purposes) -->
+<div class="absolute top-20 right-4 z-50 flex bg-black/40 backdrop-blur-md rounded-full p-1 border border-white/10">
+<label class="cursor-pointer px-3 py-1 rounded-full text-xs font-medium transition-colors hover:text-primary peer-checked:bg-white/10 text-white/50" for="state-loading" onclick="document.getElementById('state-loading').checked = true">Loading</label>
+<label class="cursor-pointer px-3 py-1 rounded-full text-xs font-medium transition-colors hover:text-primary peer-checked:bg-white/10 text-white/50" for="state-success" onclick="document.getElementById('state-success').checked = true">Success</label>
+</div>
+<!-- Top App Bar -->
+<div class="sticky top-0 z-40 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 pb-2 justify-between border-b border-black/5 dark:border-white/5">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Status Deployment</h2>
+</div>
+<!-- VIEW: LOADING -->
+<div class="view-loading flex-1 flex flex-col items-center pt-8 pb-12 px-6 animate-in fade-in duration-500">
+<!-- Headline -->
+<div class="w-full text-center mb-10">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mb-2">Finalisasi Website</h1>
+<p class="text-slate-500 dark:text-gray-400 text-sm">Mohon tunggu sebentar, sedang menyiapkan server.</p>
+</div>
+<!-- Circular Progress -->
+<div class="relative flex items-center justify-center mb-12">
+<!-- Glowing background effect -->
+<div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse-slow"></div>
+<div class="relative size-48">
+<svg class="size-full" viewbox="0 0 100 100">
+<!-- Track -->
+<circle class="text-slate-200 dark:text-white/10 stroke-current" cx="50" cy="50" fill="transparent" r="42" stroke-width="8"></circle>
+<!-- Progress -->
+<circle class="text-primary progress-ring__circle stroke-current drop-shadow-[0_0_10px_rgba(54,226,123,0.5)]" cx="50" cy="50" fill="transparent" r="42" stroke-dasharray="263.89" stroke-dashoffset="66" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<!-- Percentage Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-4xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tighter">75<span class="text-2xl text-primary">%</span></span>
+<span class="text-xs font-medium text-primary uppercase tracking-widest mt-1">Processing</span>
+</div>
+</div>
+</div>
+<!-- Checklists -->
+<div class="w-full space-y-4 max-w-sm">
+<!-- Item 1: Done -->
+<label class="checklist-item flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 shadow-sm transition-all">
+<input checked="" class="hidden peer" disabled="" type="checkbox"/>
+<div class="relative flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-white/10 peer-checked:bg-primary peer-checked:text-black text-transparent transition-colors duration-300">
+<span class="material-symbols-outlined text-[20px] absolute check-icon transition-all duration-300 scale-0 opacity-0">check</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-medium leading-none text-slate-400 dark:text-gray-500 line-through decoration-slate-400/50">Membuat Repository...</p>
+</div>
+</label>
+<!-- Item 2: Done -->
+<label class="checklist-item flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 shadow-sm transition-all">
+<input checked="" class="hidden peer" disabled="" type="checkbox"/>
+<div class="relative flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-white/10 peer-checked:bg-primary peer-checked:text-black text-transparent transition-colors duration-300">
+<span class="material-symbols-outlined text-[20px] absolute check-icon transition-all duration-300 scale-0 opacity-0">check</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-medium leading-none text-slate-400 dark:text-gray-500 line-through decoration-slate-400/50">Mengupload Foto...</p>
+</div>
+</label>
+<!-- Item 3: Active -->
+<label class="checklist-item flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-surface-dark border border-primary/30 shadow-[0_0_20px_rgba(54,226,123,0.1)] transition-all">
+<input class="hidden peer" disabled="" type="checkbox"/>
+<div class="relative flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-white/10 text-primary transition-colors duration-300">
+<span class="material-symbols-outlined text-[20px] absolute spinner-icon animate-spin">progress_activity</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold leading-none text-slate-900 dark:text-white">Cloudflare Building...</p>
+<span class="text-xs text-primary mt-1 font-medium">Est. 30s remaining</span>
+</div>
+</label>
+</div>
+<div class="mt-auto pt-8 pb-4">
+<p class="text-center text-xs text-slate-400 dark:text-white/40">Jangan tutup aplikasi ini saat proses berjalan.</p>
+</div>
+</div>
+<!-- VIEW: SUCCESS -->
+<div class="view-success hidden flex-1 flex-col items-center pt-8 pb-8 px-6 relative overflow-hidden animate-in zoom-in-95 duration-500">
+<!-- Confetti Background (Static representation of animated elements) -->
+<div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+<div class="absolute top-10 left-[10%] w-3 h-3 bg-primary rounded-full opacity-60 animate-bounce"></div>
+<div class="absolute top-20 right-[20%] w-2 h-4 bg-yellow-400 rotate-45 opacity-70 animate-pulse"></div>
+<div class="absolute top-40 left-[15%] w-4 h-4 bg-blue-500 rounded-sm rotate-12 opacity-50"></div>
+<div class="absolute top-12 left-[50%] w-2 h-2 bg-red-400 rounded-full opacity-80"></div>
+<div class="absolute top-32 right-[10%] w-3 h-3 bg-purple-500 rounded-full opacity-60"></div>
+</div>
+<!-- Hero Image / Illustration -->
+<div class="relative z-10 mb-6 mt-4">
+<div class="relative size-32 flex items-center justify-center bg-gradient-to-tr from-primary/20 to-transparent rounded-full border border-primary/20">
+<div class="absolute inset-0 bg-primary/20 blur-2xl rounded-full"></div>
+<div class="size-24 rounded-full bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(54,226,123,0.4)]">
+<span class="material-symbols-outlined text-background-dark text-[48px]">rocket_launch</span>
+</div>
+<!-- Decor elements -->
+<span class="material-symbols-outlined absolute -top-2 right-0 text-yellow-400 text-2xl animate-bounce">star</span>
+<span class="material-symbols-outlined absolute bottom-0 -left-2 text-blue-400 text-xl animate-pulse">celebration</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="z-10 text-center w-full mb-8">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight mb-3">Website Bu Ani<br/>Sudah Online!</h1>
+<p class="text-slate-500 dark:text-gray-400 text-base leading-relaxed max-w-[280px] mx-auto">Selamat! Website pisang goreng Bu Ani sekarang bisa diakses oleh pelanggan.</p>
+</div>
+<!-- Link Card -->
+<div class="z-10 w-full mb-10">
+<div class="group relative flex items-center justify-between gap-3 p-1 pl-5 pr-1 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 shadow-lg hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-green-500 text-[18px]">lock</span>
+<p class="text-sm font-medium text-slate-700 dark:text-white truncate">pisang-bu-ani.quicklaunch.site</p>
+</div>
+<button aria-label="Copy Link" class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<!-- Success Toast imitation -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-xs py-1 px-3 rounded-md opacity-0 transition-opacity group-active:opacity-100 pointer-events-none">Copied!</div>
+</div>
+<p class="text-center text-xs text-slate-400 dark:text-white/30 mt-3">Link aktif dan aman (SSL)</p>
+</div>
+<!-- Actions -->
+<div class="z-10 w-full mt-auto flex flex-col gap-3">
+<!-- WhatsApp Button -->
+<button class="relative w-full group overflow-hidden rounded-full bg-primary hover:bg-primary-hover p-4 transition-all duration-300 active:scale-[0.98]">
+<div class="relative flex items-center justify-center gap-3">
+<!-- WhatsApp Icon (SVG for brand accuracy) -->
+<svg class="w-6 h-6 text-background-dark" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.472 14.382C17.112 14.202 15.344 13.332 15.013 13.217C14.682 13.101 14.441 13.044 14.2 13.404C13.96 13.764 13.272 14.57 13.061 14.811C12.851 15.051 12.64 15.082 12.28 14.902C11.92 14.721 10.758 14.341 9.38 13.114C8.283 12.137 7.543 10.931 7.332 10.57C7.122 10.21 7.31 10.016 7.49 9.837C7.653 9.674 7.853 9.412 8.033 9.202C8.213 8.992 8.273 8.841 8.393 8.601C8.514 8.361 8.453 8.15 8.363 7.97C8.273 7.79 7.552 6.017 7.252 5.312C6.96 4.631 6.662 4.722 6.442 4.712C6.241 4.703 6.011 4.703 5.781 4.703C5.551 4.703 5.18 4.793 4.87 5.133C4.559 5.473 3.688 6.291 3.688 7.954C3.688 9.617 4.899 11.224 5.07 11.454C5.24 11.685 7.456 15.105 10.846 16.568C11.652 16.916 12.281 17.124 12.774 17.28C13.593 17.54 14.335 17.502 14.922 17.414C15.578 17.316 16.942 16.588 17.222 15.797C17.503 15.006 17.503 14.325 17.412 14.175C17.322 14.025 17.081 13.935 16.721 13.755H17.472V14.382Z"></path>
+</svg>
+<span class="text-background-dark text-base font-bold tracking-tight">Share ke WhatsApp Bu Ani</span>
+</div>
+</button>
+<!-- Secondary Button -->
+<button class="w-full rounded-full border border-slate-300 dark:border-white/20 bg-transparent p-4 hover:bg-slate-100 dark:hover:bg-white/5 transition-all active:scale-[0.98]">
+<span class="text-slate-900 dark:text-white text-base font-medium tracking-tight">Lihat Website</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

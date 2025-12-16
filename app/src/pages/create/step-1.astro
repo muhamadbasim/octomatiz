@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+---
+
+<BaseLayout title="Basic Info" showNav={false}>
+  <Header showBack title="Langkah 1" />
+  
+  <div class="flex-1 flex flex-col px-4 pt-20 pb-32 max-w-md mx-auto w-full">
+    <h1 class="text-white tracking-tight text-[32px] font-bold leading-tight text-left pb-6 pt-4">
+      Siapa Klienmu?
+    </h1>
+    
+    <form class="flex flex-col gap-6" action="/create/step-2" method="get">
+      <!-- Nama Bisnis -->
+      <label class="flex flex-col w-full">
+        <p class="text-white text-base font-medium leading-normal pb-2">Nama Bisnis</p>
+        <input 
+          type="text" 
+          name="businessName"
+          class="input-field" 
+          placeholder="Contoh: Sate Maranggi Pak Joyo"
+          required
+        />
+      </label>
+      
+      <!-- Nomor WhatsApp -->
+      <label class="flex flex-col w-full">
+        <p class="text-white text-base font-medium leading-normal pb-2">Nomor WhatsApp</p>
+        <div class="flex w-full items-stretch rounded-xl border border-border-dark bg-surface-dark overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all">
+          <div class="flex items-center justify-center pl-4 pr-3 border-r border-border-dark bg-[#151c18]">
+            <img 
+              alt="Indonesia Flag" 
+              class="w-6 h-auto mr-2 rounded-sm shadow-sm" 
+              src="https://flagcdn.com/w40/id.png"
+            />
+            <span class="text-white font-medium">+62</span>
+          </div>
+          <input 
+            type="tel" 
+            name="whatsapp"
+            class="flex w-full min-w-0 flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 h-14 placeholder:text-text-muted px-4 text-base font-normal leading-normal" 
+            placeholder="812-3456-7890"
+            required
+          />
+          <div class="flex items-center justify-center pr-4 text-success">
+            <span class="material-symbols-outlined">chat</span>
+          </div>
+        </div>
+        <p class="text-text-muted text-sm font-normal leading-normal pt-2 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">info</span>
+          Nomor ini akan jadi tombol pemesanan
+        </p>
+      </label>
+      
+      <!-- Kategori Bisnis -->
+      <div class="flex flex-col w-full">
+        <p class="text-white text-base font-medium leading-normal pb-3">Kategori Bisnis</p>
+        <div class="grid grid-cols-2 gap-3">
+          {['Kuliner', 'Fashion', 'Jasa', 'Kerajinan'].map((category, index) => (
+            <label class="cursor-pointer group relative">
+              <input 
+                type="radio" 
+                name="category" 
+                value={category.toLowerCase()}
+                class="peer sr-only" 
+                checked={index === 0}
+              />
+              <div class="flex items-center justify-center rounded-xl border border-border-dark bg-surface-dark hover:border-primary/50 text-white py-4 px-3 peer-checked:bg-primary peer-checked:text-background-dark peer-checked:border-primary transition-all">
+                <span class="font-medium peer-checked:font-bold text-base text-center w-full block">{category}</span>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
+      
+      <!-- Lokasi Bisnis -->
+      <div class="flex flex-col w-full">
+        <p class="text-white text-base font-medium leading-normal pb-2">Lokasi Bisnis</p>
+        <div class="flex w-full items-stretch rounded-xl border border-border-dark bg-surface-dark overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all relative">
+          <input 
+            type="text" 
+            name="location"
+            class="flex w-full min-w-0 flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 h-14 placeholder:text-text-muted px-4 pr-14 text-base font-normal leading-normal" 
+            placeholder="Cari kota atau kecamatan..."
+          />
+          <button 
+            type="button" 
+            class="absolute right-0 top-0 h-14 w-14 flex items-center justify-center text-primary hover:bg-primary/5 active:scale-95 transition-all" 
+            title="Deteksi Lokasi Otomatis"
+          >
+            <span class="material-symbols-outlined">my_location</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-8 z-20">
+        <div class="max-w-md mx-auto">
+          <button type="submit" class="btn-primary w-full">
+            <span>Lanjut ke Foto</span>
+            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</BaseLayout>

@@ -1,0 +1,106 @@
+---
+interface Props {
+  id: number;
+  name: string;
+  domain: string | null;
+  status: 'live' | 'building' | 'draft';
+  image: string;
+  time?: string;
+}
+
+const { id, name, domain, status, image, time } = Astro.props;
+
+const statusConfig = {
+  live: {
+    label: 'Live',
+    bgClass: 'bg-primary/10',
+    textClass: 'text-primary',
+    borderClass: 'border-primary/20',
+    hoverBorder: 'hover:border-primary/30',
+    showPulse: true,
+  },
+  building: {
+    label: 'Building',
+    bgClass: 'bg-yellow-500/10',
+    textClass: 'text-yellow-500',
+    borderClass: 'border-yellow-500/20',
+    hoverBorder: 'hover:border-yellow-500/30',
+    icon: 'handyman',
+  },
+  draft: {
+    label: 'Draft',
+    bgClass: 'bg-gray-500/10',
+    textClass: 'text-gray-400',
+    borderClass: 'border-gray-500/20',
+    hoverBorder: 'hover:border-gray-500/30',
+  },
+};
+
+const config = statusConfig[status];
+---
+
+<div class={`group relative flex flex-col gap-4 card p-4 ${config.hoverBorder} transition-all duration-300 ${status === 'draft' ? 'opacity-80 hover:opacity-100' : ''}`}>
+  <div class="flex gap-4">
+    <!-- Thumbnail -->
+    <div class="w-20 h-20 shrink-0 rounded-lg bg-gray-800 overflow-hidden relative">
+      <img 
+        class={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${status === 'draft' ? 'grayscale group-hover:grayscale-0' : ''}`}
+        src={image}
+        alt={name}
+      />
+      <div class="absolute inset-0 bg-black/10"></div>
+    </div>
+    
+    <!-- Content -->
+    <div class="flex flex-col flex-1 min-w-0 justify-center">
+      <div class="flex items-center justify-between mb-1">
+        <span class={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${config.bgClass} ${config.textClass} text-[10px] font-bold uppercase tracking-wider border ${config.borderClass}`}>
+          {config.showPulse && <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
+          {config.icon && <span class="material-symbols-outlined text-[10px]">{config.icon}</span>}
+          {config.label}
+        </span>
+        {time && <span class="text-[10px] text-gray-500">{time}</span>}
+      </div>
+      <h3 class="text-white text-base font-bold truncate leading-tight">{name}</h3>
+      {domain ? (
+        <a href={`https://${domain}`} class={`text-gray-400 text-xs hover:${config.textClass} truncate transition-colors`}>{domain}</a>
+      ) : (
+        <span class="text-gray-500 text-xs italic">Belum dipublikasi</span>
+      )}
+    </div>
+  </div>
+  
+  <!-- Actions -->
+  <div class="flex items-center gap-2 pt-2 border-t border-white/5">
+    {status === 'live' && (
+      <>
+        <button class="btn-secondary flex-1 h-9 text-xs">
+          <span class="material-symbols-outlined text-[16px]">content_copy</span>
+          Copy Link
+        </button>
+        <a href={`/edit/${id}`} class="flex-1 h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 border border-primary/10 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">edit</span>
+          Edit
+        </a>
+      </>
+    )}
+    {status === 'building' && (
+      <>
+        <button class="btn-secondary flex-1 h-9 text-xs">
+          <span class="material-symbols-outlined text-[16px]">visibility</span>
+          Preview
+        </button>
+        <a href={`/edit/${id}`} class="flex-1 h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 border border-primary/10 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">edit</span>
+          Edit
+        </a>
+      </>
+    )}
+    {status === 'draft' && (
+      <a href={`/create/step-1?id=${id}`} class="w-full h-9 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        Lanjutkan
+      </a>
+    )}
+  </div>
+</div>

@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import StatsCard from '../components/StatsCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import FAB from '../components/FAB.astro';
+
+const projects = [
+  {
+    id: 1,
+    name: 'Warung Bu Nani',
+    domain: 'warungbunani.com',
+    status: 'live' as const,
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBerrR9_Fwd3-xY3_hHijPQyQniZ0VWb7Em1XRrs9uSiDbQNhFqljKjxjNBARsXGU67BJkJfGf9lRLqEaKSjDUJWRJ52YWz545mEKd6huQqbcnFesaTk5uevasmmomzTpjUf22SSZipRAWoBv-fOEE0CSoOouAhcQCOq23K2_hQHLBiR6UbXcd4vsHTJGoj2VlN0h0H6zmnLvlswJR6cW6mS7Xkp4tM6FTwBnoob1ciraqN5ffF-pikiVc9KXtfp4nTrr8tSjPpuRxg',
+    time: '2h ago',
+  },
+  {
+    id: 2,
+    name: 'Kopi Senja',
+    domain: 'kopisenja.id',
+    status: 'building' as const,
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHdSs5UyW4XuiJ8f7zBTCgF5TTSsqZrqUgjbENPNGPPms2it-Aj4yMqxgWKe1JKA3ZD-gEm4_Sv9n0NL-LDExkpim7UVZ4H3vMrhR8qqjr6Hz3lndG4EXUUDQdt7qgkZM4cgJKYjZHx-mxqYLm_MTd1wHJyNPLjxqoxuwy5G6eu5NsvgWmWdlsUvSkeAAEecjgQf57_ShtXGJbHCfZU3OBC1cNU2peNGowm8A5-_-fPC3Wx8GNk4mDlo1m61Gza9ymetmh2KYIFVCz',
+  },
+  {
+    id: 3,
+    name: 'Laundry Kilat',
+    domain: null,
+    status: 'draft' as const,
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmJzTbC31MiGKP361FTDxJhj79QwFvTuWB3nI1kRuwgCjmLgaCehHVkjZwSKz94dGwXqjEme76nHXXNaRrsJkh1dt73t1nn02HjktSD5H4Hu5gK97UleQ67NSY9SLkuejQQBWI7y-Jg14r9-wkbnTXuZs_SNIe6LWd-_TI2vHl9zWWaRnldjhEjWbv-ONzB8Y2vl4YB5k6IUzen6t0cvW1X5fspe9HgJ61Uc9tBw7jhZquD-WiPZZz8cGtCfxZixzP8zhSzuLRZem5',
+  },
+];
+---
+
+<BaseLayout title="Dashboard">
+  <Header />
+  
+  <main class="relative pt-20 px-4 flex flex-col gap-6 max-w-md mx-auto w-full">
+    <!-- Welcome Section -->
+    <div class="flex flex-col gap-1 pt-2">
+      <p class="text-gray-400 text-sm font-medium">Selamat Datang,</p>
+      <h2 class="text-2xl font-bold text-white leading-tight">Project Terbaru Anda</h2>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 gap-3">
+      <StatsCard label="Total UMKM" value="12" color="primary" />
+      <StatsCard label="Bulan Ini" value="+3" color="blue" />
+    </div>
+
+    <!-- Project List -->
+    <div class="flex flex-col gap-4">
+      {projects.map((project) => (
+        <ProjectCard {...project} />
+      ))}
+    </div>
+  </main>
+
+  <FAB href="/create/step-1" />
+</BaseLayout>

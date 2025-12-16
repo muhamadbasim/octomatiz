@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Capture - The Wow Factor</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#36e27b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#112117",
+                        "surface-dark": "#1c2620",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scanner animation */
+        @keyframes scan-vertical {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .animate-scan {
+            animation: scan-vertical 2s linear infinite;
+        }
+        
+        /* Hide scrollbar for cleaner demo */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen font-display p-4 md:p-8 flex flex-col items-center justify-center gap-8">
+<!-- Header for Presentation Context -->
+<div class="text-center max-w-2xl mb-4">
+<h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">Langkah 2: The "Wow" Factor</h1>
+<p class="text-gray-600 dark:text-gray-400">Menampilkan status "Viewfinder" (Kiri) dan status "Scanning" (Kanan)</p>
+</div>
+<div class="flex flex-col xl:flex-row gap-8 items-center justify-center w-full">
+<!-- ========================================== -->
+<!-- STATE 1: CAMERA VIEWFINDER (Main Capture) -->
+<!-- ========================================== -->
+<div class="relative w-full max-w-[400px] h-[800px] bg-background-dark rounded-[3rem] shadow-2xl overflow-hidden border-[8px] border-surface-dark group/phone">
+<!-- Simulated Camera Feed Background -->
+<div class="absolute inset-0 w-full h-full z-0">
+<img alt="Close up view of a handcrafted ceramic mug on a wooden table with soft lighting" class="w-full h-full object-cover" data-alt="Close up view of a handcrafted ceramic mug on a wooden table with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmlduWIKSWkGBmsvQTaVFOyaV3Gac5BGTpwxferhizV4xGnqoYPgeGNDrtigD3JApqWgoGu5y_Ev7K3JB9cd2q3H5YhAYze5pbajW5rycTlYoL18Qp_aUD3tINvkgJXwuXfAvSSAZl3plvMXS_oS0SGD4_B4KCb6c--ds2fREPOppK-QotJn7ZpaEpCYLolMouCC7O0P6WzQPu7mtrzjF2-D99kOVG3KpbpWW0PkwlDfAncBW8fBCprVpQ-O-TiB578e3Icph89Oz5"/>
+<!-- Subtle gradient overlay for text readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+</div>
+<!-- Top App Bar -->
+<div class="relative z-10 flex items-center justify-between p-6 pt-8">
+<button class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">flash_on</span>
+</button>
+</div>
+<!-- Instructional Overlay -->
+<div class="relative z-10 mt-8 flex justify-center px-4">
+<div class="bg-black/40 backdrop-blur-lg border border-white/10 rounded-full px-5 py-3 max-w-[90%] text-center shadow-lg">
+<p class="text-white text-sm font-medium leading-tight">
+                        Foto produk unggulan dari jarak dekat dan pencahayaan terang.
+                    </p>
+</div>
+</div>
+<!-- Focus Reticle (Decorative) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-48 border border-white/30 rounded-lg pointer-events-none z-0">
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-lg"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-lg"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-lg"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-lg"></div>
+</div>
+<!-- Bottom Controls -->
+<div class="absolute bottom-0 left-0 right-0 z-20 pb-10 pt-20 px-8 flex items-center justify-between bg-gradient-to-t from-background-dark/95 to-transparent">
+<!-- Gallery Button -->
+<button class="flex flex-col items-center gap-1 group/btn">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
+<span class="material-symbols-outlined" style="font-size: 24px;">photo_library</span>
+</div>
+<span class="text-[10px] font-medium text-white/80">Galeri</span>
+</button>
+<!-- Shutter Button -->
+<button class="relative group/shutter">
+<!-- Outer Ring -->
+<div class="size-20 rounded-full border-4 border-white flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform group-active/shutter:scale-95">
+<!-- Inner Fill -->
+<div class="size-16 rounded-full bg-primary shadow-inner"></div>
+</div>
+</button>
+<!-- AI Tips Button (Secondary) -->
+<button class="flex flex-col items-center gap-1 group/btn">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
+<span class="material-symbols-outlined" style="font-size: 24px;">lightbulb</span>
+</div>
+<span class="text-[10px] font-medium text-white/80">Tips</span>
+</button>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- STATE 2: SCANNING/PROCESSING (Post Capture) -->
+<!-- ========================================== -->
+<div class="relative w-full max-w-[400px] h-[800px] bg-background-dark rounded-[3rem] shadow-2xl overflow-hidden border-[8px] border-surface-dark">
+<!-- Frozen Image Background (Blurred) -->
+<div class="absolute inset-0 w-full h-full z-0">
+<img alt="Blurred view of the captured photo" class="w-full h-full object-cover blur-sm scale-105" data-alt="Blurred view of the captured photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJkFut74A6sWoqJYwO6ILevtQ8bEWW5goJTgOAXJXKQAZ37GXtyqcCNQHuZdQbh-llH4iOOHTSb-Kn8-1IZa49f1yeMFS3efHWUlRl0GecpFa_6zdBaVM5yvFC8ovlhoLjR2zrImTdpDuj3YnssZMPw4gkVZtyhQw0syp8JTawIFNyiGzJQFnLcGEgknUyRX0oCp3VwC6Fxiv8ccGj78cTc-N7WEUKKUuk2qUhki0r3gzP7_Mfi89M34tuo11rN33-aCirKBtdQgQA"/>
+<!-- Dark Overlay for contrast -->
+<div class="absolute inset-0 bg-background-dark/80"></div>
+</div>
+<!-- Top App Bar (Simplified) -->
+<div class="relative z-10 flex items-center justify-between p-6 pt-8">
+<button class="flex items-center justify-center size-10 rounded-full bg-transparent text-white/50">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+<!-- Scanning Animation Center -->
+<div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+<!-- Radar/Scan Visual -->
+<div class="relative flex items-center justify-center size-64 mb-8">
+<!-- Pulse Rings -->
+<div class="absolute inset-0 rounded-full border border-primary/20 animate-[ping_3s_linear_infinite]"></div>
+<div class="absolute inset-4 rounded-full border border-primary/30 animate-[ping_3s_linear_infinite_1s]"></div>
+<!-- Rotating Dashed Ring -->
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-primary/40 animate-spin-slow"></div>
+<!-- Center Circle -->
+<div class="relative size-32 rounded-full bg-primary/10 backdrop-blur-md border border-primary/50 flex items-center justify-center overflow-hidden">
+<!-- Scanning Beam -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary shadow-[0_0_15px_rgba(54,226,123,0.8)] animate-scan"></div>
+<span class="material-symbols-outlined text-primary animate-pulse" style="font-size: 48px;">auto_awesome</span>
+</div>
+</div>
+<!-- Status Text Steps -->
+<div class="flex flex-col items-center gap-3">
+<h2 class="text-2xl font-bold text-white tracking-tight">Mendeteksi objek...</h2>
+<!-- Progress Indicators -->
+<div class="flex items-center gap-2 mt-2">
+<div class="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></div>
+</div>
+<p class="text-white/60 text-sm font-light mt-2">AI sedang menganalisa produk Anda</p>
+</div>
+</div>
+<!-- Bottom Area (Processing Info) -->
+<div class="absolute bottom-0 left-0 right-0 z-20 pb-12 px-6">
+<div class="bg-surface-dark/90 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex items-center gap-4">
+<div class="size-10 rounded-full bg-background-dark flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">text_fields</span>
+</div>
+<div class="flex flex-col gap-0.5 w-full">
+<div class="h-2 w-3/4 bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 animate-[width_2s_ease-in-out_infinite]"></div>
+</div>
+<span class="text-xs text-gray-400 font-mono mt-1">Menulis deskripsi...</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

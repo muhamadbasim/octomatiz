@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QuickLaunch Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#36e27b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#112117",
+                        "surface-dark": "#1c2620",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #112117; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-background-dark overflow-x-hidden pb-24">
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#112117]/90 backdrop-blur-md border-b border-white/5 transition-all duration-300">
+<div class="flex items-center justify-between px-4 py-3 max-w-md mx-auto w-full">
+<div class="flex items-center gap-2">
+<div class="bg-primary/20 p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[20px]">rocket_launch</span>
+</div>
+<h1 class="text-white text-lg font-bold tracking-tight">QuickLaunch</h1>
+</div>
+<div class="flex items-center gap-3">
+<!-- Connection Status -->
+<div class="hidden xs:flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-full border border-white/10">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-[10px] font-medium text-white/70 uppercase tracking-wide">Online</span>
+</div>
+<!-- Profile -->
+<div class="relative group cursor-pointer">
+<div class="h-9 w-9 rounded-full overflow-hidden border border-white/10 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+<img alt="Portrait of a male freelancer with glasses" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaxCWxBTKODiQ-UFh85YPHnvQVap5EuQen-lmTHhyuVdTwO99UqwETt9_ChlJAtxOMlvuxo41NiFRrfCtBO7ZEaFxi8qUaxIpva4cbEE4D-m4SxREOUvnlMfA1cIFVnW2rTFwoTSJOfW6kYp4Uua8HOCdb3G4Q_6U27BJfO-HgKHTYQR72SqrGVxsJCjEiEnx1HSLRS4o_p5zQy9sWeQcB4Ikr-pIzEpH1ewPlt9Kt5hWMlqcKgkwxV3dxdJBi9VZdxl6r8NY0DUUk"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="relative pt-20 px-4 flex flex-col gap-6 max-w-md mx-auto w-full">
+<!-- Welcome Section -->
+<div class="flex flex-col gap-1 pt-2">
+<p class="text-gray-400 text-sm font-medium">Selamat Datang,</p>
+<h2 class="text-2xl font-bold text-white leading-tight">Project Terbaru Anda</h2>
+</div>
+<!-- Stats / Overview (Optional context) -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-dark rounded-xl p-4 border border-white/5 relative overflow-hidden group">
+<div class="absolute -right-2 -top-2 w-16 h-16 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all"></div>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Total UMKM</p>
+<p class="text-2xl font-bold text-white">12</p>
+</div>
+<div class="bg-surface-dark rounded-xl p-4 border border-white/5 relative overflow-hidden group">
+<div class="absolute -right-2 -top-2 w-16 h-16 bg-blue-500/10 rounded-full blur-xl group-hover:bg-blue-500/20 transition-all"></div>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Bulan Ini</p>
+<p class="text-2xl font-bold text-white text-primary">+3</p>
+</div>
+</div>
+<!-- Project List -->
+<div class="flex flex-col gap-4">
+<!-- Card 1: LIVE -->
+<div class="group relative flex flex-col gap-4 bg-[#1c2620] p-4 rounded-xl border border-white/5 shadow-lg hover:border-primary/30 transition-all duration-300">
+<div class="flex gap-4">
+<!-- Thumbnail -->
+<div class="w-20 h-20 shrink-0 rounded-lg bg-gray-800 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Detailed shot of Indonesian spicy grilled chicken dish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBerrR9_Fwd3-xY3_hHijPQyQniZ0VWb7Em1XRrs9uSiDbQNhFqljKjxjNBARsXGU67BJkJfGf9lRLqEaKSjDUJWRJ52YWz545mEKd6huQqbcnFesaTk5uevasmmomzTpjUf22SSZipRAWoBv-fOEE0CSoOouAhcQCOq23K2_hQHLBiR6UbXcd4vsHTJGoj2VlN0h0H6zmnLvlswJR6cW6mS7Xkp4tM6FTwBnoob1ciraqN5ffF-pikiVc9KXtfp4nTrr8tSjPpuRxg"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<!-- Content -->
+<div class="flex flex-col flex-1 min-w-0 justify-center">
+<div class="flex items-center justify-between mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Live
+                            </span>
+<span class="text-[10px] text-gray-500">2h ago</span>
+</div>
+<h3 class="text-white text-base font-bold truncate leading-tight">Warung Bu Nani</h3>
+<a class="text-gray-400 text-xs hover:text-primary truncate transition-colors" href="#">warungbunani.com</a>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-white/5">
+<button class="flex-1 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        Copy Link
+                    </button>
+<button class="flex-1 h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 border border-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                        Edit
+                    </button>
+</div>
+</div>
+<!-- Card 2: BUILDING -->
+<div class="group relative flex flex-col gap-4 bg-[#1c2620] p-4 rounded-xl border border-white/5 shadow-lg hover:border-yellow-500/30 transition-all duration-300">
+<div class="flex gap-4">
+<!-- Thumbnail -->
+<div class="w-20 h-20 shrink-0 rounded-lg bg-gray-800 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Close up of latte art in a coffee cup on wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHdSs5UyW4XuiJ8f7zBTCgF5TTSsqZrqUgjbENPNGPPms2it-Aj4yMqxgWKe1JKA3ZD-gEm4_Sv9n0NL-LDExkpim7UVZ4H3vMrhR8qqjr6Hz3lndG4EXUUDQdt7qgkZM4cgJKYjZHx-mxqYLm_MTd1wHJyNPLjxqoxuwy5G6eu5NsvgWmWdlsUvSkeAAEecjgQf57_ShtXGJbHCfZU3OBC1cNU2peNGowm8A5-_-fPC3Wx8GNk4mDlo1m61Gza9ymetmh2KYIFVCz"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<!-- Content -->
+<div class="flex flex-col flex-1 min-w-0 justify-center">
+<div class="flex items-center justify-between mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-bold uppercase tracking-wider border border-yellow-500/20">
+<span class="material-symbols-outlined text-[10px]">handyman</span> Building
+                            </span>
+</div>
+<h3 class="text-white text-base font-bold truncate leading-tight">Kopi Senja</h3>
+<a class="text-gray-400 text-xs hover:text-yellow-500 truncate transition-colors" href="#">kopisenja.id</a>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-white/5">
+<button class="flex-1 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                        Preview
+                    </button>
+<button class="flex-1 h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 border border-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                        Edit
+                    </button>
+</div>
+</div>
+<!-- Card 3: DRAFT -->
+<div class="group relative flex flex-col gap-4 bg-[#1c2620] p-4 rounded-xl border border-white/5 shadow-lg hover:border-gray-500/30 transition-all duration-300 opacity-80 hover:opacity-100">
+<div class="flex gap-4">
+<!-- Thumbnail -->
+<div class="w-20 h-20 shrink-0 rounded-lg bg-gray-800 overflow-hidden relative">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Interior of a modern laundry service with washing machines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmJzTbC31MiGKP361FTDxJhj79QwFvTuWB3nI1kRuwgCjmLgaCehHVkjZwSKz94dGwXqjEme76nHXXNaRrsJkh1dt73t1nn02HjktSD5H4Hu5gK97UleQ67NSY9SLkuejQQBWI7y-Jg14r9-wkbnTXuZs_SNIe6LWd-_TI2vHl9zWWaRnldjhEjWbv-ONzB8Y2vl4YB5k6IUzen6t0cvW1X5fspe9HgJ61Uc9tBw7jhZquD-WiPZZz8cGtCfxZixzP8zhSzuLRZem5"/>
+</div>
+<!-- Content -->
+<div class="flex flex-col flex-1 min-w-0 justify-center">
+<div class="flex items-center justify-between mb-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-400 text-[10px] font-bold uppercase tracking-wider border border-gray-500/20">
+                                Draft
+                            </span>
+</div>
+<h3 class="text-white text-base font-bold truncate leading-tight">Laundry Kilat</h3>
+<span class="text-gray-500 text-xs italic">Belum dipublikasi</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-white/5">
+<button class="w-full h-9 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        Lanjutkan
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-24 right-4 z-40 md:right-[calc(50%-220px)]">
+<button class="group flex items-center justify-center w-14 h-14 bg-primary rounded-full shadow-[0_0_20px_rgba(54,226,123,0.4)] text-background-dark hover:scale-110 active:scale-95 transition-all duration-300">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
+</button>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-[#112117]/95 backdrop-blur-lg border-t border-white/5 pb-safe z-50">
+<div class="flex items-center justify-around max-w-md mx-auto h-16 px-2">
+<a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
+<span class="material-symbols-outlined filled">dashboard</span>
+<span class="text-[10px] font-medium">Beranda</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-[10px] font-medium">Proyek</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Akun</span>
+</a>
+</div>
+</nav>
+<!-- Safe area spacing for mobile -->
+<div class="h-6"></div>
+</body></html>

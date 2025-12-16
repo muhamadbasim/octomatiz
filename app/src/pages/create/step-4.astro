@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+
+const templates = [
+  { id: 'simple', name: 'Simple Clean', active: true, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDgZYSzed1Ds_KeDMIdY9zX-xw3f5RHAd4HF46tfaHJ9nHEU2H65tMdDkOoRT5t6YBz3D_k_FSwkF2HDnVF0uv_mw4SI54Dv1EIAiGgoZzaNQaUyiIqNw9W7v3Ge55mbw8Qvtpu3dxTVkPtxJ4ANLt66Apl_eY3RkLItRuj6NFeHPCoksypis7PWSBBEZex0mtMBw81pSG9ygyLh30s6-bY41NjbRGs20yTwj4THc6c9dtYheAiE9oovY1R87OgxLBo3i_-O-y_P-fS' },
+  { id: 'warm', name: 'Warm Culinary', active: false, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAH_lEKqhnqmJP5nk7SQrBUn94R18t7_djMWr4-kgrnlSkhdPt0NBD_H1PHL1ZhTZdirsct6Tn3DaiCFOqp1UH_Iq92VWGPzgeWjue9Cmr0uBAfOfI9JmqhRmyYZFfqFc4whSW5cFwSXqJj-1hSksiF8GsrUkLIrFMC9P2XkFSBExqvt0NwdIBgp07qivFJYmLwW1GZXh4vJ3Z_cQQWeNe-gi98T1hMYIyYKMt_og-Z99dQbQ7unIi77qqRUAn8VdbZBayzytENKBMm' },
+  { id: 'modern', name: 'Modern Blue', active: false, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDIeE3JzuUnuePEJwRgWQ70C_1A1r8JKdvtrlt6399amb2WxCs7YXbTK4U3p9yh-2IEzm506Wb0KHBKFy1xJfbowqUPs3bbvxHjTGjnO0VianCucR0bqNhyfQSlzH2V98LvKlWjvXuIoCDMvEBJvtuA4RWABuyBeMRSR2_i8SmTFkgDI4iiYuPnUCwD-6G6aF0tqdq4qbfZtTGqt877wE46vDrXDCKWBcmEW7oTTcOlBU5yC2vvmL967gftAzGMWaEQwiVVBr3pdeCT' },
+];
+
+const colors = [
+  { id: 'green', hex: '#36e27b', active: false },
+  { id: 'blue', hex: '#2563EB', active: true },
+  { id: 'amber', hex: '#F59E0B', active: false },
+  { id: 'pink', hex: '#EC4899', active: false },
+];
+---
+
+<BaseLayout title="Design & Theme" showNav={false}>
+  <Header showBack title="Langkah 4: Desain" />
+  
+  <div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col overflow-x-hidden pb-24 pt-16">
+    <!-- Progress Indicator -->
+    <div class="flex w-full flex-row items-center justify-center gap-2 py-3 px-4">
+      <div class="h-1.5 flex-1 rounded-full bg-primary"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-primary"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-primary"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-white/20 relative overflow-hidden">
+        <div class="absolute inset-y-0 left-0 w-1/2 bg-primary"></div>
+      </div>
+    </div>
+    
+    <!-- Preview Area -->
+    <section class="flex flex-col items-center justify-center px-6 pt-2 pb-6">
+      <h3 class="text-white text-sm font-medium opacity-60 mb-3 uppercase tracking-wide">Preview Tampilan</h3>
+      
+      <!-- Phone Mockup Container -->
+      <div class="relative w-full aspect-[9/16] max-h-[420px] bg-gray-900 rounded-[2.5rem] border-[6px] border-gray-800 shadow-xl overflow-hidden ring-1 ring-white/10">
+        <!-- Status Bar Mock -->
+        <div class="absolute top-0 w-full h-6 bg-black z-10 flex justify-between px-4 items-center text-[10px] text-white">
+          <span>9:41</span>
+          <div class="flex gap-1">
+            <span class="material-symbols-outlined text-[10px]">signal_cellular_alt</span>
+            <span class="material-symbols-outlined text-[10px]">wifi</span>
+            <span class="material-symbols-outlined text-[10px]">battery_full</span>
+          </div>
+        </div>
+        
+        <!-- Preview Content -->
+        <div class="w-full h-full bg-white overflow-y-auto pt-6 pb-4">
+          <!-- Hero Image -->
+          <div 
+            class="w-full h-40 bg-cover bg-center relative"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBYv-Raaj2Mm7pIRS5rNWUDbJDlLdKONfxzBCCKQA-ScJ4IX807ZytDjIJyeNaLGs67Or7oSx0y0oHRBvozJlIDb_DgiQNsl61uvgtXoGIJyNwkOdawFraF__ACPmPVYqb4vPVdwchlXkhDgsg0t3Q2qjb98mZz1NBH3mUItryNq3wzIEqlMeofBs6EVN-xo0zL5LU9Q79qOcYTdhpNx5cVRU2Ow3DVk5p7g8Y3owsaPN1jB3pQZtax0PgP0V5x6hFZYrFn6QWPUD4m');"
+          >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+              <h1 class="text-white font-bold text-xl">Warung Bu Siti</h1>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="p-4 space-y-3">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <span class="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-bold">Makanan</span>
+              <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-lg text-xs font-bold">Promo</span>
+            </div>
+            <div class="h-20 bg-gray-100 rounded-xl flex p-2 gap-3 items-center">
+              <div 
+                class="h-16 w-16 bg-gray-300 rounded-lg shrink-0 bg-cover"
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA86IpBng3KUXC2whgVnHBLt2P-eyANbuvjNTTaLcWDnQ-trP8itna1irWmz_vsSxDr2rv5ujRIqJXdkFqAdshB7caugNArwoqggIGSSMyUppEDXwIn_2NGtCBbGFjzvTy1W7U6NNT9zEu-uAF8xNFNekA4q3R-htv9gVzhczRJcPr-v8ZEkfu_rSTUIdFK_wgIql332YxvTo5e8z3Cdy8s9l_M0AB55T3d1W6BVGkjwW3gYI6Ws0ELDHGbCHrUlrPqNqowYPNTFdNf')"
+              ></div>
+              <div>
+                <div class="font-bold text-sm text-gray-800">Nasi Goreng Spesial</div>
+                <div class="text-xs text-gray-500">Rp 25.000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Controls Section -->
+    <div class="flex-1 bg-surface-dark rounded-t-[2.5rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)] mt-2 pb-8">
+      <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mt-4 mb-6"></div>
+      
+      <!-- Template Selector -->
+      <div class="mb-8 pl-6">
+        <div class="flex items-center justify-between pr-6 mb-3">
+          <h3 class="text-white text-lg font-bold leading-tight">Gaya Template</h3>
+          <span class="text-primary text-xs font-medium cursor-pointer">Lihat Semua</span>
+        </div>
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pr-6 pb-2 snap-x">
+          {templates.map((template) => (
+            <div class={`snap-center shrink-0 w-36 p-3 rounded-2xl cursor-pointer relative group ${template.active ? 'bg-black/40 border-2 border-primary' : 'bg-black/20 border border-white/5 opacity-70 hover:opacity-100'} transition-opacity`}>
+              {template.active && (
+                <div class="absolute -top-2 -right-2 bg-primary text-black rounded-full p-0.5">
+                  <span class="material-symbols-outlined text-sm font-bold">check</span>
+                </div>
+              )}
+              <div class="w-full aspect-[4/3] bg-gray-800 rounded-xl mb-3 overflow-hidden">
+                <img alt={template.name} class={`w-full h-full object-cover ${template.active ? 'opacity-80' : 'opacity-60'}`} src={template.image} />
+              </div>
+              <p class={`text-white text-sm text-center ${template.active ? 'font-bold' : 'font-medium'}`}>{template.name}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <!-- Color Theme Selector -->
+      <div class="px-6">
+        <h3 class="text-white text-lg font-bold leading-tight mb-4">Tema Warna</h3>
+        <div class="flex justify-between items-center gap-4 bg-black/20 p-4 rounded-2xl">
+          {colors.map((color) => (
+            <button 
+              class={`relative h-12 w-12 rounded-full transition-all ${color.active ? 'ring-2 ring-white ring-offset-2 shadow-lg scale-110' : 'hover:scale-105'}`}
+              style={`background-color: ${color.hex}; ${color.active ? `ring-offset-color: ${color.hex}` : ''}`}
+            >
+              {color.active && (
+                <span class="material-symbols-outlined text-white absolute inset-0 flex items-center justify-center text-xl">check</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sticky Footer CTA -->
+    <div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-12 z-30 flex justify-center pointer-events-none">
+      <a href="/create/step-5" class="pointer-events-auto shadow-[0_0_40px_rgba(54,226,123,0.4)] btn-primary w-full max-w-sm text-lg">
+        <span class="material-symbols-outlined">rocket_launch</span>
+        <span class="truncate tracking-wide">PUBLISH SEKARANG</span>
+      </a>
+    </div>
+  </div>
+</BaseLayout>

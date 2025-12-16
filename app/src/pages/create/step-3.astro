@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+---
+
+<BaseLayout title="Content Review" showNav={false}>
+  <Header showBack title="Review Konten" step="3/4" />
+  
+  <main class="flex-1 overflow-y-auto no-scrollbar pb-32 pt-16">
+    <div class="p-4 space-y-6 max-w-lg mx-auto w-full">
+      <!-- Image Preview Card -->
+      <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-white/5 group">
+        <div 
+          class="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
+          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDO7-B5n0FlOid7O_Y7EFdC6T9G0s_GtO1D1C_JRGsunsgod7gjSF4TAsOK7GHqFyH6Jm_5ulDGdNchO6WcDCsF3TQI87LCBYRau9HMoKYTc_jhyTzlmoXOGF-EpO7mUqxP_oztrLPeI73s3NhREKS-7OcjM0xyXqyKPjIynUvHjZ5Drq4DSIRfgXp3ZYBDbhe0PptgrbQdQchpr8Xstt5UxKlOLz9AD15NoEGSQHbE1qe1UVGhHwQMt0IgqxmAKm9zej9Wavo-nrAy');"
+        ></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+        <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+          <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <span class="material-symbols-outlined text-primary text-[18px]">photo_camera</span>
+            <span class="text-white text-xs font-medium">Original Photo</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Generated Badge -->
+      <div class="flex items-center gap-2 px-1">
+        <span class="material-symbols-outlined text-primary text-[20px]">auto_awesome</span>
+        <span class="text-sm font-medium text-text-muted">Konten dibuat oleh AI berdasarkan foto</span>
+      </div>
+      
+      <!-- Headline Input -->
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-semibold text-white ml-1 flex justify-between items-center">
+          Headline Utama
+          <span class="text-xs text-primary font-normal bg-primary/10 px-2 py-0.5 rounded-full">AI Suggestion</span>
+        </label>
+        <div class="group relative flex items-center w-full rounded-xl bg-surface-dark border border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm">
+          <input 
+            type="text" 
+            class="w-full bg-transparent border-none p-4 pr-12 text-base font-medium text-white placeholder-text-muted focus:ring-0 focus:outline-none" 
+            value="Keripik Pisang Terenyah di Kota, Manis Alami!"
+          />
+          <div class="absolute right-4 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Storytelling Input -->
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-semibold text-white ml-1 flex justify-between items-center">
+          Cerita Produk (Storytelling)
+          <span class="text-xs text-primary font-normal bg-primary/10 px-2 py-0.5 rounded-full">AI Suggestion</span>
+        </label>
+        <div class="group relative w-full rounded-xl bg-surface-dark border border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm">
+          <textarea 
+            class="w-full bg-transparent border-none p-4 pr-12 text-base leading-relaxed text-white placeholder-text-muted focus:ring-0 focus:outline-none resize-none" 
+            rows="6"
+          >Dibuat dari pisang kepok pilihan yang dipanen langsung dari kebun lokal. Setiap irisan digoreng dengan suhu tepat untuk menghasilkan kerenyahan maksimal tanpa minyak berlebih.
+
+Rasakan manis alami tanpa pemanis buatan yang bikin nagih di setiap gigitan!</textarea>
+          <div class="absolute top-4 right-4 text-text-muted group-focus-within:text-primary transition-colors pointer-events-none">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Sticky Footer Action -->
+  <div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-background-dark via-background-dark to-transparent z-20 pb-8 pt-12">
+    <div class="max-w-lg mx-auto">
+      <a href="/create/step-4" class="btn-primary w-full shadow-[0_0_20px_rgba(54,226,123,0.3)]">
+        <span>Simpan & Pilih Tampilan</span>
+        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</BaseLayout>
