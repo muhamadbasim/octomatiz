@@ -6,10 +6,11 @@
 
 
 
-  - [ ] 1.1 Create Gemini service utilities
+  - [x] 1.1 Create Gemini service utilities
     - Create `src/lib/gemini.ts` with API client
     - Implement prompt builder with category templates
     - Implement response parser
+    - Added Groq API as fallback when Gemini rate limited
     - _Requirements: 1.2, 4.1_
   - [ ]* 1.2 Write property test for prompt builder
     - **Property 4: Category inclusion in prompt**
@@ -28,14 +29,10 @@
 
 - [x] 2. Create API route for image analysis
 
-  - [ ] 2.1 Create `/api/analyze` endpoint
+  - [x] 2.1 Create `/api/analyze` endpoint
     - Create `src/pages/api/analyze.ts`
-
-
-
     - Handle POST requests with image and category
-    - Call Gemini API securely
-
+    - Call Gemini API with Groq fallback
     - _Requirements: 5.2, 5.3_
   - [x] 2.2 Implement error handling
 
@@ -46,17 +43,14 @@
 
 
 
-- [ ] 3. Create content generation hook
+- [x] 3. Create content generation hook
   - [x] 3.1 Create useContentGeneration hook
-
     - Create `src/hooks/useContentGeneration.ts`
     - Manage generation state and regeneration count
     - Implement 3-attempt limit
-
     - _Requirements: 3.1, 3.3_
   - [ ]* 3.2 Write property test for regeneration limit
     - **Property 3: Regeneration limit enforcement**
-
     - **Validates: Requirements 3.3**
 
 
@@ -89,26 +83,26 @@
     - **Property 2: Storytelling word count constraint**
     - **Validates: Requirements 2.4**
 
-- [ ] 5. Checkpoint - Verify API integration
-  - Ensure all tests pass, ask the user if questions arise.
+- [x] 5. Checkpoint - Verify API integration
+  - API working with Gemini + Groq fallback
 
-- [ ] 6. Update Step 2 to trigger AI analysis
-  - [ ] 6.1 Integrate content generation in Step 2
+- [x] 6. Update Step 2 to trigger AI analysis
+  - [x] 6.1 Integrate content generation in Step 2
     - Call analyze API after image capture
     - Show loading state during analysis
     - Handle errors with retry option
     - _Requirements: 1.1, 1.3_
 
-- [ ] 7. Update Step 3 to use generated content
-  - [ ] 7.1 Display AI-generated content
+- [x] 7. Update Step 3 to use generated content
+  - [x] 7.1 Display AI-generated content
     - Show headline and storytelling from API
     - Allow editing of generated content
     - _Requirements: 2.1, 2.2_
-  - [ ] 7.2 Implement regenerate functionality
+  - [x] 7.2 Implement regenerate functionality
     - Add regenerate button with counter
     - Disable after 3 attempts
     - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 8. Final Checkpoint - AI content generation complete
-  - Ensure all tests pass, ask the user if questions arise.
-  - Test full flow from photo to generated content
+- [x] 8. Final Checkpoint - AI content generation complete
+  - Full flow working from photo to generated content
+  - Gemini as primary, Groq as fallback

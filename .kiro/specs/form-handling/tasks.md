@@ -76,7 +76,7 @@
     - Disable submit button when invalid
     - _Requirements: 3.1, 3.2, 3.3_
 
-  - [ ] 5.3 Implement auto-save in Step 1
+  - [x] 5.3 Implement auto-save in Step 1
     - Use useAutoSave hook to persist form data
     - _Requirements: 1.1_
 
