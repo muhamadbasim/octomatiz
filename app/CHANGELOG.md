@@ -30,6 +30,20 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2024-12-17
+
+### Added
+- **Image Compression** - Compress foto produk client-side sebelum kirim ke AI API
+  - Target size: < 500KB
+  - Max dimensions: 1200x1200px
+  - Menampilkan ukuran file setelah compress
+  - Loading state saat compress
+
+### Changed
+- Step 2 sekarang menampilkan ukuran file gambar yang sudah dioptimalkan
+
+---
+
 ## [1.0.2] - 2024-12-17
 
 ### Fixed
@@ -65,6 +79,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.1.0   | 2024-12-17 | Image compression feature      |
 | 1.0.2   | 2024-12-17 | Fix false offline page on mobile |
 | 1.0.1   | 2024-12-17 | Bug fixes & improvements       |
 | 1.0.0   | 2024-12-17 | Initial release                |

@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
 import { useContentGeneration } from '../../hooks/useContentGeneration';
+import { compressImage, getBase64SizeKB, formatFileSize } from '../../lib/imageCompressor';
 
 export function Step2Capture() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [imageSize, setImageSize] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { generate, isGenerating, content, error: aiError } = useContentGeneration({
@@ -50,17 +53,39 @@ export function Step2Capture() {
     }
   }, [aiError]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageData = event.target?.result as string;
-      setCapturedImage(imageData);
-      setScanError(null);
-    };
-    reader.readAsDataURL(file);
+    setIsCompressing(true);
+    setScanError(null);
+
+    try {
+      // Compress image to < 500KB for optimal API performance
+      const compressed = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.8,
+        maxSizeKB: 500,
+      });
+      
+      const sizeKB = getBase64SizeKB(compressed);
+      setImageSize(formatFileSize(sizeKB));
+      setCapturedImage(compressed);
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      // Fallback to original if compression fails
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageData = event.target?.result as string;
+        const sizeKB = getBase64SizeKB(imageData);
+        setImageSize(formatFileSize(sizeKB));
+        setCapturedImage(imageData);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleCapture = () => {
@@ -88,6 +113,26 @@ export function Step2Capture() {
     setCurrentStep(3);
     window.location.href = `/create/step-3?id=${currentProject.id}`;
   };
+
+  // Compressing state
+  if (isCompressing) {
+    return (
+      <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center px-6">
+        <div className="relative mb-8">
+          <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-primary/50 bg-surface-dark flex items-center justify-center">
+            <span className="material-symbols-outlined text-6xl text-primary/50 animate-pulse">photo_camera</span>
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center gap-2 text-primary mb-2">
+            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+            <span className="font-bold">Mengoptimalkan Gambar...</span>
+          </div>
+          <p className="text-gray-400 text-sm">Mengompres untuk performa terbaik</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isScanning || isGenerating) {
     return (
@@ -207,7 +252,7 @@ export function Step2Capture() {
         <div className="bg-black/40 backdrop-blur-lg border border-white/10 rounded-full px-5 py-3 max-w-[90%] text-center shadow-lg">
           <p className="text-white text-sm font-medium leading-tight">
             {capturedImage
-              ? 'Foto sudah diambil. Lanjut atau ambil ulang.'
+              ? `Foto sudah diambil${imageSize ? ` (${imageSize})` : ''}. Lanjut atau ambil ulang.`
               : 'Foto produk unggulan dari jarak dekat dan pencahayaan terang.'}
           </p>
         </div>
