@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
 import { useContentGeneration } from '../../hooks/useContentGeneration';
 import { compressImage, getBase64SizeKB, formatFileSize } from '../../lib/imageCompressor';
+import { TipsModal } from './TipsModal';
 
 export function Step2Capture() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
@@ -10,6 +11,7 @@ export function Step2Capture() {
   const [isCompressing, setIsCompressing] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState<string | null>(null);
+  const [showTips, setShowTips] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { generate, isGenerating, content, error: aiError } = useContentGeneration({
@@ -34,7 +36,6 @@ export function Step2Capture() {
   // Handle AI generation result
   useEffect(() => {
     if (content && currentProject && isScanning) {
-      // Save AI-generated content to project
       updateProject(currentProject.id, {
         productImage: capturedImage || undefined,
         headline: content.headline,
@@ -61,7 +62,6 @@ export function Step2Capture() {
     setScanError(null);
 
     try {
-      // Compress image to < 500KB for optimal API performance
       const compressed = await compressImage(file, {
         maxWidth: 1200,
         maxHeight: 1200,
@@ -74,7 +74,6 @@ export function Step2Capture() {
       setCapturedImage(compressed);
     } catch (error) {
       console.error('Image compression failed:', error);
-      // Fallback to original if compression fails
       const reader = new FileReader();
       reader.onload = (event) => {
         const imageData = event.target?.result as string;
@@ -98,17 +97,13 @@ export function Step2Capture() {
     setIsScanning(true);
     setScanError(null);
     
-    // Save image first
     updateProject(currentProject.id, { productImage: capturedImage });
-
-    // Call AI to analyze image
     await generate(capturedImage);
   };
 
   const handleSkipAI = () => {
     if (!capturedImage || !currentProject) return;
     
-    // Save image and go to step 3 without AI
     updateProject(currentProject.id, { productImage: capturedImage });
     setCurrentStep(3);
     window.location.href = `/create/step-3?id=${currentProject.id}`;
@@ -142,7 +137,6 @@ export function Step2Capture() {
             {capturedImage && (
               <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
             )}
-            {/* Scanning line animation */}
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute w-full h-1 bg-primary/80 animate-scan shadow-[0_0_20px_rgba(54,226,123,0.8)]"></div>
             </div>
@@ -177,10 +171,7 @@ export function Step2Capture() {
           </div>
           <p className="text-gray-400 text-sm mb-6">{scanError}</p>
           <div className="flex flex-col gap-3">
-            <button
-              onClick={handleContinue}
-              className="btn-primary w-full"
-            >
+            <button onClick={handleContinue} className="btn-primary w-full">
               <span className="material-symbols-outlined">refresh</span>
               Coba Lagi
             </button>
@@ -207,7 +198,6 @@ export function Step2Capture() {
 
   return (
     <div className="relative min-h-screen bg-background-dark">
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -294,13 +284,16 @@ export function Step2Capture() {
         )}
 
         {/* Tips Button */}
-        <button className="flex flex-col items-center gap-1 group/btn">
+        <button onClick={() => setShowTips(true)} className="flex flex-col items-center gap-1 group/btn">
           <div className="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
             <span className="material-symbols-outlined">lightbulb</span>
           </div>
           <span className="text-[10px] font-medium text-white/80">Tips</span>
         </button>
       </div>
+
+      {/* Tips Modal */}
+      <TipsModal isOpen={showTips} onClose={() => setShowTips(false)} />
     </div>
   );
 }

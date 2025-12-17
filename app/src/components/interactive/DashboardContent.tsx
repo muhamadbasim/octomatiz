@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useProjects } from '../../hooks/useProject';
+import { DashboardSkeleton } from './SkeletonCard';
+import { DeleteConfirmModal } from './DeleteConfirmModal';
 import type { Project } from '../../types/project';
 
 interface ProjectCardProps {
   project: Project;
   onContinue: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, name: string) => void;
 }
 
 function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
@@ -37,9 +40,7 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm(`Hapus proyek "${displayName}"?`)) {
-      onDelete(project.id);
-    }
+    onDelete(project.id, displayName);
   };
 
   return (
@@ -112,6 +113,11 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
 
 export function DashboardContent() {
   const { projects, isLoading, createProject, deleteProject, loadProject } = useProjects();
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string; name: string }>({
+    isOpen: false,
+    id: '',
+    name: '',
+  });
 
   const handleCreateProject = () => {
     const newProject = createProject();
@@ -125,8 +131,17 @@ export function DashboardContent() {
     window.location.href = `/create/step-${step}?id=${id}`;
   };
 
-  const handleDeleteProject = (id: string) => {
-    deleteProject(id);
+  const handleDeleteClick = (id: string, name: string) => {
+    setDeleteModal({ isOpen: true, id, name });
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteProject(deleteModal.id);
+    setDeleteModal({ isOpen: false, id: '', name: '' });
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, id: '', name: '' });
   };
 
   // Stats
@@ -137,12 +152,9 @@ export function DashboardContent() {
     return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
   }).length;
 
+  // Show skeleton while loading
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -185,7 +197,7 @@ export function DashboardContent() {
               key={project.id}
               project={project}
               onContinue={handleContinueProject}
-              onDelete={handleDeleteProject}
+              onDelete={handleDeleteClick}
             />
           ))
         )}
@@ -199,6 +211,14 @@ export function DashboardContent() {
       >
         <span className="material-symbols-outlined text-[28px]">add</span>
       </button>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        projectName={deleteModal.name}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </>
   );
 }

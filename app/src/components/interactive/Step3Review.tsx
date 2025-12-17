@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
 import { countWords, HEADLINE_MAX_LENGTH, STORYTELLING_MIN_WORDS, STORYTELLING_MAX_WORDS } from '../../lib/contentValidation';
-import type { GeneratedContent, GeminiResult } from '../../lib/gemini';
+import type { GeminiResult } from '../../lib/gemini';
 
 const MAX_REGENERATE = 3;
 
@@ -12,6 +12,7 @@ export function Step3Review() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [regenerateCount, setRegenerateCount] = useState(0);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   const canRegenerate = regenerateCount < MAX_REGENERATE && !!currentProject?.productImage;
 
@@ -25,7 +26,6 @@ export function Step3Review() {
 
   useEffect(() => {
     if (currentProject) {
-      // Load existing content from project
       setHeadline(currentProject.headline || '');
       setStorytelling(currentProject.storytelling || '');
     }
@@ -54,7 +54,6 @@ export function Step3Review() {
       if (result.success && result.data) {
         setHeadline(result.data.headline);
         setStorytelling(result.data.storytelling);
-        // Also save to project
         updateProject(currentProject.id, {
           headline: result.data.headline,
           storytelling: result.data.storytelling,
@@ -69,7 +68,6 @@ export function Step3Review() {
     }
   }, [currentProject, canRegenerate, updateProject]);
 
-  // Character/word count helpers
   const headlineLength = headline.length;
   const storyWordCount = countWords(storytelling);
   const isHeadlineTooLong = headlineLength > HEADLINE_MAX_LENGTH;
@@ -84,26 +82,40 @@ export function Step3Review() {
     window.location.href = `/create/step-4?id=${currentProject.id}`;
   };
 
-  const productImage = currentProject?.productImage || 'https://via.placeholder.com/400x300/1a1a2e/36e27b?text=🐙';
+  const productImage = currentProject?.productImage;
+  const hasImage = !!productImage;
 
   return (
     <>
       <main className="flex-1 overflow-y-auto no-scrollbar pb-32 pt-16">
         <div className="p-4 space-y-6 max-w-lg mx-auto w-full">
           {/* Image Preview Card */}
-          <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-white/5 group">
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
-              style={{ backgroundImage: `url('${productImage}')` }}
-            ></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
-            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-              <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                <span className="material-symbols-outlined text-primary text-[18px]">photo_camera</span>
-                <span className="text-white text-xs font-medium">Original Photo</span>
+          {hasImage ? (
+            <div 
+              className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-lg border border-white/5 group cursor-pointer"
+              onClick={() => setShowImagePreview(true)}
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: `url('${productImage}')` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
+              <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                  <span className="material-symbols-outlined text-primary text-[18px]">photo_camera</span>
+                  <span className="text-white text-xs font-medium">Foto Produk</span>
+                </div>
+                <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
+                  <span className="material-symbols-outlined text-white/70 text-[14px]">zoom_in</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="w-full aspect-[4/3] rounded-xl bg-surface-dark border border-dashed border-white/20 flex flex-col items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-4xl text-gray-600">image</span>
+              <span className="text-gray-500 text-sm">Tidak ada foto produk</span>
+            </div>
+          )}
 
           {/* AI Generated Badge */}
           <div className="flex items-center gap-2 px-1">
@@ -113,7 +125,7 @@ export function Step3Review() {
 
           {isGenerating ? (
             <div className="flex flex-col items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4" />
               <p className="text-gray-400">AI sedang membuat konten...</p>
             </div>
           ) : (
@@ -222,6 +234,26 @@ export function Step3Review() {
           </button>
         </div>
       </div>
+
+      {/* Full Image Preview Modal */}
+      {showImagePreview && productImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setShowImagePreview(false)}
+        >
+          <button
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            onClick={() => setShowImagePreview(false)}
+          >
+            <span className="material-symbols-outlined text-white">close</span>
+          </button>
+          <img 
+            src={productImage} 
+            alt="Product Preview" 
+            className="max-w-full max-h-[80vh] object-contain rounded-lg"
+          />
+        </div>
+      )}
     </>
   );
 }

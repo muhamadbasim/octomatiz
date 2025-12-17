@@ -5,6 +5,21 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2024-12-17
+
+### Added
+- **Delete Confirmation Modal** - Konfirmasi sebelum hapus proyek dengan UI yang lebih baik
+- **Loading Skeleton** - Skeleton loading di dashboard saat memuat data
+- **Image Preview Modal** - Klik foto produk di Step 3 untuk melihat full-size
+- **Tips Modal** - Tombol Tips di Step 2 sekarang berfungsi dengan panduan foto produk
+- **Retry dengan Exponential Backoff** - API calls otomatis retry hingga 3x dengan delay bertambah
+
+### Changed
+- Dashboard sekarang menampilkan skeleton saat loading
+- Step 3 menampilkan preview foto produk yang bisa di-zoom
+
+---
+
 ## [1.0.0] - 2024-12-17
 
 ### 🎉 Initial Release
@@ -79,6 +94,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.2.0   | 2024-12-17 | UX improvements bundle         |
 | 1.1.0   | 2024-12-17 | Image compression feature      |
 | 1.0.2   | 2024-12-17 | Fix false offline page on mobile |
 | 1.0.1   | 2024-12-17 | Bug fixes & improvements       |

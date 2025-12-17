@@ -3,6 +3,8 @@ import type { BusinessCategory } from '../types/project';
 import type { GeneratedContent, GeminiResult } from '../lib/gemini';
 
 const MAX_REGENERATE_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 interface UseContentGenerationOptions {
   category: BusinessCategory;
@@ -19,6 +21,21 @@ interface UseContentGenerationReturn {
   canRegenerate: boolean;
   setContent: (content: GeneratedContent | null) => void;
   clearError: () => void;
+}
+
+/**
+ * Delay helper for exponential backoff
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Calculate delay with exponential backoff
+ * Attempt 1: 1s, Attempt 2: 2s, Attempt 3: 4s
+ */
+function getBackoffDelay(attempt: number): number {
+  return INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
 }
 
 export function useContentGeneration(
@@ -51,6 +68,61 @@ export function useContentGeneration(
     [options.category, options.businessName]
   );
 
+  /**
+   * Call API with exponential backoff retry
+   */
+  const callWithRetry = useCallback(
+    async (image: string): Promise<GeminiResult> => {
+      let lastError: Error | null = null;
+
+      for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+        try {
+          const result = await callAnalyzeAPI(image);
+          
+          // If successful or it's a non-retryable error, return immediately
+          if (result.success) {
+            return result;
+          }
+          
+          // Check if error is retryable (rate limit, server error)
+          const isRetryable = result.error?.code === 'RATE_LIMITED' || 
+                              result.error?.code === 'SERVER_ERROR' ||
+                              result.error?.message?.includes('rate') ||
+                              result.error?.message?.includes('timeout');
+          
+          if (!isRetryable || attempt === MAX_RETRY_ATTEMPTS) {
+            return result;
+          }
+          
+          // Wait before retry with exponential backoff
+          const backoffDelay = getBackoffDelay(attempt);
+          console.log(`Retry attempt ${attempt}/${MAX_RETRY_ATTEMPTS} after ${backoffDelay}ms`);
+          await delay(backoffDelay);
+          
+        } catch (err) {
+          lastError = err as Error;
+          
+          // Network error - retry with backoff
+          if (attempt < MAX_RETRY_ATTEMPTS) {
+            const backoffDelay = getBackoffDelay(attempt);
+            console.log(`Network error, retry attempt ${attempt}/${MAX_RETRY_ATTEMPTS} after ${backoffDelay}ms`);
+            await delay(backoffDelay);
+          }
+        }
+      }
+
+      // All retries failed
+      return {
+        success: false,
+        error: {
+          code: 'NETWORK_ERROR',
+          message: lastError?.message || 'Koneksi gagal setelah beberapa percobaan. Periksa internet dan coba lagi.',
+        },
+      };
+    },
+    [callAnalyzeAPI]
+  );
+
   const generate = useCallback(
     async (image: string) => {
       setIsGenerating(true);
@@ -59,7 +131,7 @@ export function useContentGeneration(
       setRegenerateCount(0);
 
       try {
-        const result = await callAnalyzeAPI(image);
+        const result = await callWithRetry(image);
 
         if (result.success && result.data) {
           setContent(result.data);
@@ -72,7 +144,7 @@ export function useContentGeneration(
         setIsGenerating(false);
       }
     },
-    [callAnalyzeAPI]
+    [callWithRetry]
   );
 
   const regenerate = useCallback(async () => {
@@ -85,7 +157,7 @@ export function useContentGeneration(
     setRegenerateCount((prev) => prev + 1);
 
     try {
-      const result = await callAnalyzeAPI(lastImage);
+      const result = await callWithRetry(lastImage);
 
       if (result.success && result.data) {
         setContent(result.data);
@@ -97,7 +169,7 @@ export function useContentGeneration(
     } finally {
       setIsGenerating(false);
     }
-  }, [canRegenerate, lastImage, callAnalyzeAPI]);
+  }, [canRegenerate, lastImage, callWithRetry]);
 
   const clearError = useCallback(() => {
     setError(null);
