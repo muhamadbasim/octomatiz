@@ -6,8 +6,9 @@ import cloudflare from '@astrojs/cloudflare';
 import AstroPWA from '@vite-pwa/astro';
 
 // https://astro.build/config
+// Note: In Astro 5.x, 'hybrid' is removed. Use 'server' for SSR with prerender on static pages
 export default defineConfig({
-  output: 'hybrid', // hybrid allows both static pages and API routes
+  output: 'server',
   adapter: cloudflare(),
   integrations: [
     react(),
