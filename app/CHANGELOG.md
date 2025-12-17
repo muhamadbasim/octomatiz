@@ -30,6 +30,14 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2024-12-17
+
+### Fixed
+- **False Offline Page** - Disable `navigateFallback` di PWA config untuk mencegah halaman offline muncul padahal koneksi ada
+- Bug ini menyebabkan `/create/step-*` menampilkan "Kamu Sedang Offline" di mobile padahal online
+
+---
+
 ## [1.0.1] - 2024-12-17
 
 ### Fixed
@@ -57,6 +65,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.0.2   | 2024-12-17 | Fix false offline page on mobile |
 | 1.0.1   | 2024-12-17 | Bug fixes & improvements       |
 | 1.0.0   | 2024-12-17 | Initial release                |
 

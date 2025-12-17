@@ -75,9 +75,8 @@ export default defineConfig({
             },
           },
         ],
-        // Offline fallback - only for navigation requests, not API
-        navigateFallback: '/offline',
-        navigateFallbackDenylist: [/^\/api\//], // Don't fallback API routes to offline page
+        // Note: navigateFallback disabled to prevent false offline detection on mobile
+        // Browser will show default error page if truly offline
       },
       devOptions: {
         enabled: true,
