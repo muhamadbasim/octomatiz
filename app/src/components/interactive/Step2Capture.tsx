@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
-import { useContentGeneration } from '../../hooks/useContentGeneration';
 import { compressImage, getBase64SizeKB, formatFileSize } from '../../lib/imageCompressor';
 import { TipsModal } from './TipsModal';
 
@@ -13,11 +12,6 @@ export function Step2Capture() {
   const [imageSize, setImageSize] = useState<string | null>(null);
   const [showTips, setShowTips] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { generate, isGenerating, content, error: aiError } = useContentGeneration({
-    category: currentProject?.category || 'kuliner',
-    businessName: currentProject?.businessName || '',
-  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,39 +27,8 @@ export function Step2Capture() {
     }
   }, [currentProject?.id]);
 
-  // Handle AI generation result - navigate when content is ready and not generating
-  useEffect(() => {
-    // Only proceed if we have content, a project, and generation just finished
-    if (content && currentProject && !isGenerating && isScanning) {
-      console.log('AI content ready:', content);
-      
-      // Save data first and wait for it to complete
-      const projectData = {
-        productImage: capturedImage || undefined,
-        headline: content.headline,
-        storytelling: content.storytelling,
-      };
-      
-      updateProject(currentProject.id, projectData);
-      setCurrentStep(3);
-      
-      // Reset scanning state
-      setIsScanning(false);
-      
-      // Small delay to ensure localStorage is updated before navigation
-      setTimeout(() => {
-        window.location.href = `/create/step-3?id=${currentProject.id}`;
-      }, 150);
-    }
-  }, [content, isGenerating]);
-
-  // Handle AI error
-  useEffect(() => {
-    if (aiError && !isGenerating) {
-      setScanError(aiError);
-      setIsScanning(false);
-    }
-  }, [aiError, isGenerating]);
+  // Note: AI generation is now handled directly in handleContinue
+  // to avoid race conditions with useEffect and state updates
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,8 +73,47 @@ export function Step2Capture() {
     setIsScanning(true);
     setScanError(null);
     
+    // Save image first
     updateProject(currentProject.id, { productImage: capturedImage });
-    await generate(capturedImage);
+    
+    // Call AI API directly here instead of relying on useEffect
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: capturedImage,
+          category: currentProject.category,
+          businessName: currentProject.businessName,
+        }),
+      });
+      
+      const result = await response.json();
+      console.log('AI API result:', result);
+      
+      if (result.success && result.data) {
+        // Save headline and storytelling to localStorage
+        const projectData = {
+          productImage: capturedImage,
+          headline: result.data.headline,
+          storytelling: result.data.storytelling,
+        };
+        
+        console.log('Saving to localStorage:', projectData);
+        updateProject(currentProject.id, projectData);
+        setCurrentStep(3);
+        
+        // Navigate after save
+        window.location.href = `/create/step-3?id=${currentProject.id}`;
+      } else {
+        setScanError(result.error?.message || 'Gagal menganalisis foto');
+        setIsScanning(false);
+      }
+    } catch (err) {
+      console.error('AI API error:', err);
+      setScanError('Koneksi gagal. Periksa internet dan coba lagi.');
+      setIsScanning(false);
+    }
   };
 
   const handleSkipAI = () => {
@@ -142,7 +144,7 @@ export function Step2Capture() {
     );
   }
 
-  if (isScanning || isGenerating) {
+  if (isScanning) {
     return (
       <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center px-6">
         <div className="relative mb-8">
