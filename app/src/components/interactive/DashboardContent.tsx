@@ -207,7 +207,7 @@ export function DashboardContent() {
       {/* Welcome Section */}
       <div className="flex flex-col gap-1 pt-2">
         <p className="text-gray-400 text-sm font-medium">Selamat Datang,</p>
-        <h2 className="text-2xl font-bold text-white leading-tight">Project Terbaru Anda</h2>
+        <h2 className="text-2xl font-bold text-white leading-tight">Orang Yang Sudah Dibantu Kamu</h2>
       </div>
 
       {/* Stats */}
