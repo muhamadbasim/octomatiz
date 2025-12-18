@@ -5,6 +5,20 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2024-12-18
+
+### Added
+- **Copy Link dengan Toast** - Tombol copy link di dashboard dengan notifikasi toast
+- **Edit Project** - Tombol edit untuk proyek yang sudah live
+- **Template Preview** - Preview full-screen template sebelum memilih di Step 4
+- **Toast Notification** - Komponen toast untuk feedback aksi user
+
+### Changed
+- Dashboard stats sekarang menampilkan "Sudah Live" bukan "Bulan Ini"
+- Proyek live bisa diklik untuk membuka website di tab baru
+
+---
+
 ## [1.2.0] - 2024-12-17
 
 ### Added
@@ -94,6 +108,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.3.0   | 2024-12-18 | Dashboard enhancements         |
 | 1.2.0   | 2024-12-17 | UX improvements bundle         |
 | 1.1.0   | 2024-12-17 | Image compression feature      |
 | 1.0.2   | 2024-12-17 | Fix false offline page on mobile |

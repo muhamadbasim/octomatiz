@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
+import { TemplatePreviewModal } from './TemplatePreviewModal';
 import type { TemplateStyle, ColorTheme } from '../../types/project';
 
-const TEMPLATES: { id: TemplateStyle; name: string; image: string }[] = [
-  { id: 'simple', name: 'Simple Clean', image: 'https://via.placeholder.com/144x108/1a1a2e/36e27b?text=Simple' },
-  { id: 'warm', name: 'Warm Culinary', image: 'https://via.placeholder.com/144x108/2d1f1f/f59e0b?text=Warm' },
-  { id: 'modern', name: 'Modern Blue', image: 'https://via.placeholder.com/144x108/1f2937/2563eb?text=Modern' },
+const TEMPLATES: { id: TemplateStyle; name: string; description: string; image: string }[] = [
+  { id: 'simple', name: 'Simple Clean', description: 'Minimalis & profesional', image: 'https://via.placeholder.com/144x108/1a1a2e/36e27b?text=Simple' },
+  { id: 'warm', name: 'Warm Culinary', description: 'Hangat untuk kuliner', image: 'https://via.placeholder.com/144x108/2d1f1f/f59e0b?text=Warm' },
+  { id: 'modern', name: 'Modern Blue', description: 'Modern & elegan', image: 'https://via.placeholder.com/144x108/1f2937/2563eb?text=Modern' },
 ];
 
-const COLORS: { id: ColorTheme; hex: string }[] = [
-  { id: 'green', hex: '#36e27b' },
-  { id: 'blue', hex: '#2563EB' },
-  { id: 'amber', hex: '#F59E0B' },
-  { id: 'pink', hex: '#EC4899' },
+const COLORS: { id: ColorTheme; hex: string; name: string }[] = [
+  { id: 'green', hex: '#36e27b', name: 'Hijau' },
+  { id: 'blue', hex: '#2563EB', name: 'Biru' },
+  { id: 'amber', hex: '#F59E0B', name: 'Kuning' },
+  { id: 'pink', hex: '#EC4899', name: 'Pink' },
 ];
 
 export function Step4Design() {
   const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
   const [template, setTemplate] = useState<TemplateStyle>('simple');
   const [colorTheme, setColorTheme] = useState<ColorTheme>('green');
+  const [previewTemplate, setPreviewTemplate] = useState<TemplateStyle | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -45,6 +47,17 @@ export function Step4Design() {
     });
     setCurrentStep(5);
     window.location.href = `/create/step-5?id=${currentProject.id}`;
+  };
+
+  const handlePreviewTemplate = (templateId: TemplateStyle) => {
+    setPreviewTemplate(templateId);
+  };
+
+  const handleSelectFromPreview = () => {
+    if (previewTemplate) {
+      setTemplate(previewTemplate);
+      setPreviewTemplate(null);
+    }
   };
 
   const productImage = currentProject?.productImage || 'https://via.placeholder.com/400x300/1a1a2e/36e27b?text=🐙';
@@ -109,6 +122,7 @@ export function Step4Design() {
         <div className="mb-8 pl-6">
           <div className="flex items-center justify-between pr-6 mb-3">
             <h3 className="text-white text-lg font-bold leading-tight">Gaya Template</h3>
+            <span className="text-xs text-gray-400">Tap untuk preview</span>
           </div>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pr-6 pb-2 snap-x">
             {TEMPLATES.map((t) => (
@@ -126,16 +140,27 @@ export function Step4Design() {
                     <span className="material-symbols-outlined text-sm font-bold">check</span>
                   </div>
                 )}
-                <div className="w-full aspect-[4/3] bg-gray-800 rounded-xl mb-3 overflow-hidden">
+                <div 
+                  className="w-full aspect-[4/3] bg-gray-800 rounded-xl mb-3 overflow-hidden relative"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePreviewTemplate(t.id);
+                  }}
+                >
                   <img
                     alt={t.name}
                     className={`w-full h-full object-cover ${template === t.id ? 'opacity-80' : 'opacity-60'}`}
                     src={t.image}
                   />
+                  {/* Preview overlay */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="material-symbols-outlined text-white text-2xl">visibility</span>
+                  </div>
                 </div>
                 <p className={`text-white text-sm text-center ${template === t.id ? 'font-bold' : 'font-medium'}`}>
                   {t.name}
                 </p>
+                <p className="text-gray-400 text-[10px] text-center mt-0.5">{t.description}</p>
               </button>
             ))}
           </div>
@@ -149,16 +174,23 @@ export function Step4Design() {
               <button
                 key={color.id}
                 onClick={() => setColorTheme(color.id)}
-                className={`relative h-12 w-12 rounded-full transition-all ${
-                  colorTheme === color.id ? 'ring-2 ring-white ring-offset-2 shadow-lg scale-110' : 'hover:scale-105'
-                }`}
-                style={{ backgroundColor: color.hex, ringOffsetColor: colorTheme === color.id ? color.hex : undefined }}
+                className="flex flex-col items-center gap-2"
               >
-                {colorTheme === color.id && (
-                  <span className="material-symbols-outlined text-white absolute inset-0 flex items-center justify-center text-xl">
-                    check
-                  </span>
-                )}
+                <div
+                  className={`relative h-12 w-12 rounded-full transition-all ${
+                    colorTheme === color.id ? 'ring-2 ring-white ring-offset-2 shadow-lg scale-110' : 'hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color.hex, ringOffsetColor: colorTheme === color.id ? color.hex : undefined }}
+                >
+                  {colorTheme === color.id && (
+                    <span className="material-symbols-outlined text-white absolute inset-0 flex items-center justify-center text-xl">
+                      check
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[10px] ${colorTheme === color.id ? 'text-white font-medium' : 'text-gray-500'}`}>
+                  {color.name}
+                </span>
               </button>
             ))}
           </div>
@@ -175,6 +207,22 @@ export function Step4Design() {
           <span className="truncate tracking-wide">PUBLISH SEKARANG</span>
         </button>
       </div>
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <TemplatePreviewModal
+          isOpen={true}
+          template={previewTemplate}
+          colorTheme={colorTheme}
+          businessName={currentProject?.businessName || 'Nama Bisnis'}
+          headline={currentProject?.headline || 'Headline produk Anda'}
+          storytelling={currentProject?.storytelling || 'Cerita produk akan muncul di sini...'}
+          productImage={productImage}
+          whatsapp={currentProject?.whatsapp || ''}
+          onClose={() => setPreviewTemplate(null)}
+          onSelect={handleSelectFromPreview}
+        />
+      )}
     </div>
   );
 }

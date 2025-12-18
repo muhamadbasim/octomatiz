@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { useProjects } from '../../hooks/useProject';
 import { DashboardSkeleton } from './SkeletonCard';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { Toast, useToast } from './Toast';
 import type { Project } from '../../types/project';
 
 interface ProjectCardProps {
   project: Project;
   onContinue: (id: string) => void;
+  onEdit: (id: string) => void;
   onDelete: (id: string, name: string) => void;
+  onCopyLink: (domain: string) => void;
 }
 
-function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
+function ProjectCard({ project, onContinue, onEdit, onDelete, onCopyLink }: ProjectCardProps) {
   const statusConfig: Record<string, { label: string; bgClass: string; textClass: string; borderClass: string; showPulse?: boolean; icon?: string }> = {
     live: {
       label: 'Live',
@@ -41,6 +44,18 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(project.id, displayName);
+  };
+
+  const handleCopyLink = () => {
+    if (project.domain) {
+      onCopyLink(project.domain);
+    }
+  };
+
+  const handleVisitSite = () => {
+    if (project.domain) {
+      window.open(`https://${project.domain}`, '_blank');
+    }
   };
 
   return (
@@ -75,7 +90,12 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
           </div>
           <h3 className="text-white text-base font-bold truncate leading-tight">{displayName}</h3>
           {project.domain ? (
-            <a href={`https://${project.domain}`} className="text-gray-400 text-xs hover:text-primary truncate transition-colors">{project.domain}</a>
+            <button 
+              onClick={handleVisitSite}
+              className="text-gray-400 text-xs hover:text-primary truncate transition-colors text-left"
+            >
+              {project.domain} ↗
+            </button>
           ) : (
             <span className="text-gray-500 text-xs italic">Belum dipublikasi</span>
           )}
@@ -100,10 +120,21 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
           </button>
         )}
         {project.status === 'live' && (
-          <button className="w-full h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
-            <span className="material-symbols-outlined text-[16px]">content_copy</span>
-            Copy Link
-          </button>
+          <div className="flex gap-2 w-full">
+            <button 
+              onClick={handleCopyLink}
+              className="flex-1 h-9 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">content_copy</span>
+              Copy Link
+            </button>
+            <button 
+              onClick={() => onEdit(project.id)}
+              className="h-9 px-3 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">edit</span>
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -112,7 +143,8 @@ function ProjectCard({ project, onContinue, onDelete }: ProjectCardProps) {
 
 
 export function DashboardContent() {
-  const { projects, isLoading, createProject, deleteProject, loadProject } = useProjects();
+  const { projects, isLoading, createProject, deleteProject, loadProject, updateProject } = useProjects();
+  const { toast, showToast, hideToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string; name: string }>({
     isOpen: false,
     id: '',
@@ -131,6 +163,22 @@ export function DashboardContent() {
     window.location.href = `/create/step-${step}?id=${id}`;
   };
 
+  const handleEditProject = (id: string) => {
+    // Set project back to draft mode for editing
+    updateProject(id, { status: 'draft', currentStep: 1 });
+    loadProject(id);
+    window.location.href = `/create/step-1?id=${id}`;
+  };
+
+  const handleCopyLink = async (domain: string) => {
+    try {
+      await navigator.clipboard.writeText(`https://${domain}`);
+      showToast('Link berhasil disalin!', 'success');
+    } catch {
+      showToast('Gagal menyalin link', 'error');
+    }
+  };
+
   const handleDeleteClick = (id: string, name: string) => {
     setDeleteModal({ isOpen: true, id, name });
   };
@@ -138,6 +186,7 @@ export function DashboardContent() {
   const handleDeleteConfirm = () => {
     deleteProject(deleteModal.id);
     setDeleteModal({ isOpen: false, id: '', name: '' });
+    showToast('Proyek berhasil dihapus', 'success');
   };
 
   const handleDeleteCancel = () => {
@@ -146,11 +195,7 @@ export function DashboardContent() {
 
   // Stats
   const totalProjects = projects.length;
-  const thisMonthProjects = projects.filter(p => {
-    const created = new Date(p.createdAt);
-    const now = new Date();
-    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-  }).length;
+  const liveProjects = projects.filter(p => p.status === 'live').length;
 
   // Show skeleton while loading
   if (isLoading) {
@@ -169,11 +214,11 @@ export function DashboardContent() {
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-4 flex flex-col gap-1">
           <span className="text-2xl font-bold text-primary">{totalProjects}</span>
-          <span className="text-xs text-gray-400">Total UMKM</span>
+          <span className="text-xs text-gray-400">Total Proyek</span>
         </div>
         <div className="card p-4 flex flex-col gap-1">
-          <span className="text-2xl font-bold text-blue-400">+{thisMonthProjects}</span>
-          <span className="text-xs text-gray-400">Bulan Ini</span>
+          <span className="text-2xl font-bold text-blue-400">{liveProjects}</span>
+          <span className="text-xs text-gray-400">Sudah Live</span>
         </div>
       </div>
 
@@ -197,7 +242,9 @@ export function DashboardContent() {
               key={project.id}
               project={project}
               onContinue={handleContinueProject}
+              onEdit={handleEditProject}
               onDelete={handleDeleteClick}
+              onCopyLink={handleCopyLink}
             />
           ))
         )}
@@ -219,6 +266,15 @@ export function DashboardContent() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
+
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </>
   );
 }
