@@ -1,9 +1,20 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute, APIContext } from 'astro';
 import { analyzeImageWithGemini, type GeminiResult } from '../../lib/gemini';
 import { analyzeImageWithGroq } from '../../lib/groq';
 import type { BusinessCategory } from '../../types/project';
 
 export const prerender = false;
+
+// Helper to get env variables - works both locally and on Cloudflare
+function getEnvVar(context: APIContext, key: string): string | undefined {
+  // Try Cloudflare runtime env first (production)
+  const runtime = (context.locals as { runtime?: { env?: Record<string, string> } }).runtime;
+  if (runtime?.env?.[key]) {
+    return runtime.env[key];
+  }
+  // Fallback to import.meta.env (local dev)
+  return (import.meta.env as Record<string, string>)[key];
+}
 
 // Helper function to retry with delay
 async function retryWithDelay<T>(
@@ -31,11 +42,14 @@ interface AnalyzeRequestBody {
   businessName: string;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+  const { request } = context;
   try {
-    // Get API keys from environment
-    const geminiKey = import.meta.env.GEMINI_API_KEY;
-    const groqKey = import.meta.env.GROQ_API_KEY;
+    // Get API keys from environment (works on both local and Cloudflare)
+    const geminiKey = getEnvVar(context, 'GEMINI_API_KEY');
+    const groqKey = getEnvVar(context, 'GROQ_API_KEY');
+    
+    console.log('ENV check - Gemini key exists:', !!geminiKey, 'Groq key exists:', !!groqKey);
     
     if (!geminiKey && !groqKey) {
       console.error('No AI API keys configured');

@@ -1,0 +1,10 @@
+# Cloudflare Pages configuration
+name = "octomatiz"
+compatibility_date = "2024-12-01"
+
+# Environment variables for local development with wrangler
+# For production, set these in Cloudflare Dashboard > Settings > Environment Variables
+[vars]
+# These are placeholders - actual values should be set in Cloudflare Dashboard
+# GEMINI_API_KEY = "your-key-here"
+# GROQ_API_KEY = "your-key-here"

@@ -9,7 +9,11 @@ import AstroPWA from '@vite-pwa/astro';
 // Note: In Astro 5.x, 'hybrid' is removed. Use 'server' for SSR with prerender on static pages
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true,
+    },
+  }),
   integrations: [
     react(),
     tailwind(),
