@@ -16,27 +16,32 @@ export function Step3Review() {
 
   const canRegenerate = regenerateCount < MAX_REGENERATE && !!currentProject?.productImage;
 
-  // Track if initial load is done
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
+  // Load data on mount - read directly from localStorage to avoid race conditions
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
+    
     if (projectId) {
-      // Always reload project from localStorage to get fresh data
+      // Read directly from localStorage first (synchronous, guaranteed fresh data)
+      try {
+        const projectsData = localStorage.getItem('octomatiz_projects');
+        if (projectsData) {
+          const projects = JSON.parse(projectsData);
+          const project = projects.find((p: { id: string }) => p.id === projectId);
+          if (project) {
+            console.log('Direct localStorage read - headline:', project.headline, 'storytelling:', project.storytelling);
+            setHeadline(project.headline || '');
+            setStorytelling(project.storytelling || '');
+          }
+        }
+      } catch (e) {
+        console.error('Error reading from localStorage:', e);
+      }
+      
+      // Also load to context for other functionality
       loadProject(projectId);
     }
   }, []);
-
-  // Load content when project is loaded
-  useEffect(() => {
-    if (currentProject && isInitialLoad) {
-      console.log('Loading project data:', currentProject.headline, currentProject.storytelling);
-      setHeadline(currentProject.headline || '');
-      setStorytelling(currentProject.storytelling || '');
-      setIsInitialLoad(false);
-    }
-  }, [currentProject, isInitialLoad]);
 
   const handleRegenerate = useCallback(async () => {
     if (!currentProject?.productImage || !canRegenerate) return;
