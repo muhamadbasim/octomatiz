@@ -11,8 +11,8 @@ interface ChecklistItem {
 
 const CHECKLIST: ChecklistItem[] = [
   { id: 'generating', label: 'Membuat Halaman...', completedLabel: 'Halaman dibuat' },
-  { id: 'uploading', label: 'Mengupload Foto...', completedLabel: 'Foto diupload' },
-  { id: 'building', label: 'Cloudflare Building...', completedLabel: 'Build selesai' },
+  { id: 'uploading', label: 'Menyimpan ke Server...', completedLabel: 'Tersimpan' },
+  { id: 'building', label: 'Mengaktifkan Website...', completedLabel: 'Website aktif' },
 ];
 
 export function Step5Deploy() {
@@ -61,17 +61,27 @@ export function Step5Deploy() {
   const currentStageIndex = getStageIndex(stage);
 
   const businessName = currentProject?.businessName || 'Website Anda';
-  const domain = currentProject?.domain || `${businessName.toLowerCase().replace(/\s+/g, '-')}.octomatiz.site`;
+  const deployedUrl = currentProject?.deployedUrl || '';
+  const domain = currentProject?.domain || '';
+  
+  // Extract display URL (remove https://)
+  const displayUrl = deployedUrl.replace(/^https?:\/\//, '');
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://${domain}`);
+    navigator.clipboard.writeText(deployedUrl);
     alert('Link berhasil disalin!');
   };
 
   const handleShareWhatsApp = () => {
     const waNumber = currentProject?.whatsapp || '';
-    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, `https://${domain}`);
+    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, deployedUrl);
     window.open(shareUrl, '_blank');
+  };
+  
+  const handleVisitSite = () => {
+    if (deployedUrl) {
+      window.open(deployedUrl, '_blank');
+    }
   };
 
   const handlePreview = () => {
@@ -136,11 +146,15 @@ export function Step5Deploy() {
 
         {/* Link Card */}
         <div className="z-10 w-full mb-10">
-          <div className="group relative flex items-center justify-between gap-3 p-1 pl-5 pr-1 rounded-full bg-surface-dark border border-white/10 shadow-lg hover:border-primary/50 transition-colors">
-            <div className="flex items-center gap-2 overflow-hidden">
+          <div className="group relative flex items-center justify-between gap-3 p-1 pl-5 pr-1 rounded-2xl bg-surface-dark border border-white/10 shadow-lg hover:border-primary/50 transition-colors">
+            <button 
+              onClick={handleVisitSite}
+              className="flex items-center gap-2 overflow-hidden py-3 hover:opacity-80 transition-opacity"
+            >
               <span className="material-symbols-outlined text-green-500 text-[18px]">lock</span>
-              <p className="text-sm font-medium text-white truncate">{domain}</p>
-            </div>
+              <p className="text-sm font-medium text-white truncate">{displayUrl}</p>
+              <span className="material-symbols-outlined text-gray-400 text-[16px]">open_in_new</span>
+            </button>
             <button
               onClick={handleCopyLink}
               className="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"

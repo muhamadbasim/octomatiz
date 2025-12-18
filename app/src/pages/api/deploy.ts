@@ -1,14 +1,51 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute, APIContext } from 'astro';
 import type { Project } from '../../types/project';
-import { generateLandingPage, generateDomain } from '../../lib/landingPageGenerator';
+import { generateLandingPage } from '../../lib/landingPageGenerator';
 
 export const prerender = false;
+
+// Helper to get KV binding
+function getKV(context: APIContext): KVNamespace | undefined {
+  const runtime = (context.locals as { runtime?: { env?: { LANDING_PAGES?: KVNamespace } } }).runtime;
+  return runtime?.env?.LANDING_PAGES;
+}
+
+// Generate URL-safe slug from business name
+function generateSlug(businessName: string): string {
+  return businessName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50)
+    .replace(/^-|-$/g, '');
+}
+
+// Check if slug exists and generate unique one
+async function getUniqueSlug(kv: KVNamespace | undefined, baseSlug: string): Promise<string> {
+  if (!kv) return baseSlug;
+  
+  let slug = baseSlug;
+  let counter = 1;
+  
+  while (true) {
+    const existing = await kv.get(`landing:${slug}`);
+    if (!existing) break;
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+    if (counter > 100) break; // Safety limit
+  }
+  
+  return slug;
+}
 
 interface DeployRequestBody {
   project: Project;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (context) => {
+  const { request } = context;
+  
   try {
     const body: DeployRequestBody = await request.json();
     
@@ -41,23 +78,47 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Generate landing page
+    // Generate landing page HTML
     const { html } = generateLandingPage(project);
-    const domain = generateDomain(project.businessName);
-    const url = `https://${domain}`;
-
-    // In production, this would:
-    // 1. Upload HTML to Cloudflare Pages
-    // 2. Configure custom domain
-    // 3. Return actual deployed URL
     
-    // For MVP, we return simulated success
+    // Generate unique slug
+    const kv = getKV(context);
+    const baseSlug = generateSlug(project.businessName);
+    const slug = await getUniqueSlug(kv, baseSlug);
+    
+    // Determine base URL
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://octomatiz.pages.dev'
+      : 'http://localhost:4321';
+    
+    const url = `${baseUrl}/p/${slug}`;
+    const domain = `octomatiz.pages.dev/p/${slug}`;
+
+    // Store to KV if available
+    if (kv) {
+      const kvData = {
+        html,
+        businessName: project.businessName,
+        projectId: project.id,
+        createdAt: new Date().toISOString(),
+        template: project.template,
+        colorTheme: project.colorTheme,
+      };
+      
+      await kv.put(`landing:${slug}`, JSON.stringify(kvData));
+      console.log(`Landing page deployed to KV: ${slug}`);
+    } else {
+      console.log('KV not available, returning simulated deployment');
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         url,
         domain,
+        slug,
         html, // Include HTML for preview
+        isReal: !!kv, // Indicate if this was a real deployment
       }),
       {
         status: 200,

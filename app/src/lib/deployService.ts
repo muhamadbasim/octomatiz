@@ -1,5 +1,4 @@
 import type { Project } from '../types/project';
-import { generateLandingPage, generateDomain } from './landingPageGenerator';
 
 export type DeploymentStage = 'generating' | 'uploading' | 'building' | 'success' | 'error';
 
@@ -13,13 +12,14 @@ export interface DeploymentResult {
   success: boolean;
   url?: string;
   domain?: string;
+  slug?: string;
   html?: string;
   error?: string;
+  isReal?: boolean;
 }
 
 /**
- * Simulate deployment stages with progress callbacks
- * In production, this would integrate with Cloudflare Pages API
+ * Deploy landing page to Cloudflare KV via API
  */
 export async function deployProject(
   project: Project,
@@ -33,56 +33,60 @@ export async function deployProject(
       message: 'Membuat halaman landing...',
     });
     
-    await delay(800);
-    
-    const { html } = generateLandingPage(project);
+    await delay(500);
     
     onProgress?.({
       stage: 'generating',
       progress: 30,
       message: 'Halaman landing dibuat',
     });
-    
-    await delay(500);
 
-    // Stage 2: Upload assets (simulated)
+    // Stage 2: Upload to KV
     onProgress?.({
       stage: 'uploading',
       progress: 50,
-      message: 'Mengupload foto produk...',
+      message: 'Menyimpan ke server...',
     });
-    
-    await delay(1000);
-    
+
+    // Call deploy API
+    const response = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ project }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Deployment failed');
+    }
+
     onProgress?.({
       stage: 'uploading',
-      progress: 65,
-      message: 'Foto berhasil diupload',
+      progress: 70,
+      message: 'Berhasil disimpan',
+    });
+
+    // Stage 3: Finalize
+    onProgress?.({
+      stage: 'building',
+      progress: 85,
+      message: 'Mengaktifkan website...',
     });
     
     await delay(500);
-
-    // Stage 3: Build and deploy (simulated)
-    onProgress?.({
-      stage: 'building',
-      progress: 75,
-      message: 'Cloudflare sedang building...',
-    });
-    
-    await delay(1500);
     
     onProgress?.({
       stage: 'building',
-      progress: 90,
+      progress: 95,
       message: 'Hampir selesai...',
     });
     
-    await delay(800);
+    await delay(300);
 
     // Stage 4: Success
-    const domain = generateDomain(project.businessName);
-    const url = `https://${domain}`;
-    
     onProgress?.({
       stage: 'success',
       progress: 100,
@@ -91,11 +95,15 @@ export async function deployProject(
 
     return {
       success: true,
-      url,
-      domain,
-      html,
+      url: result.url,
+      domain: result.domain,
+      slug: result.slug,
+      html: result.html,
+      isReal: result.isReal,
     };
   } catch (error) {
+    console.error('Deploy error:', error);
+    
     onProgress?.({
       stage: 'error',
       progress: 0,
@@ -124,9 +132,9 @@ export function getStageInfo(stage: DeploymentStage): { label: string; icon: str
     case 'generating':
       return { label: 'Membuat Halaman', icon: 'code' };
     case 'uploading':
-      return { label: 'Upload Foto', icon: 'cloud_upload' };
+      return { label: 'Menyimpan', icon: 'cloud_upload' };
     case 'building':
-      return { label: 'Building', icon: 'construction' };
+      return { label: 'Mengaktifkan', icon: 'rocket_launch' };
     case 'success':
       return { label: 'Selesai', icon: 'check_circle' };
     case 'error':

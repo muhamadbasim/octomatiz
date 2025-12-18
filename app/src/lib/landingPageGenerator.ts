@@ -79,15 +79,22 @@ export function generateWhatsAppShareUrl(
 }
 
 /**
- * Generate domain from business name
+ * Generate slug from business name
  */
-export function generateDomain(businessName: string): string {
-  const slug = businessName
+export function generateSlug(businessName: string): string {
+  return businessName
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .substring(0, 30);
-  
-  return `${slug}.octomatiz.site`;
+    .substring(0, 50)
+    .replace(/^-|-$/g, '');
+}
+
+/**
+ * Generate domain/path from business name
+ */
+export function generateDomain(businessName: string): string {
+  const slug = generateSlug(businessName);
+  return `octomatiz.pages.dev/p/${slug}`;
 }
