@@ -54,6 +54,8 @@ export default defineConfig({
       workbox: {
         // Precache all static pages
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt,woff,woff2}'],
+        // Exclude landing pages from service worker
+        navigateFallbackDenylist: [/^\/p\//, /^\/api\//],
         // Runtime caching for images
         runtimeCaching: [
           {

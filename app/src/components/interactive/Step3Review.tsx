@@ -16,31 +16,27 @@ export function Step3Review() {
 
   const canRegenerate = regenerateCount < MAX_REGENERATE && !!currentProject?.productImage;
 
+  // Track if initial load is done
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
-    if (projectId && !currentProject) {
+    if (projectId) {
+      // Always reload project from localStorage to get fresh data
       loadProject(projectId);
     }
   }, []);
 
-  // Load content when project changes or when headline/storytelling updates
+  // Load content when project is loaded
   useEffect(() => {
-    if (currentProject) {
-      // Only update if values are different to avoid overwriting user edits
-      if (currentProject.headline && headline !== currentProject.headline) {
-        setHeadline(currentProject.headline);
-      }
-      if (currentProject.storytelling && storytelling !== currentProject.storytelling) {
-        setStorytelling(currentProject.storytelling);
-      }
-      // If both are empty, set from project (initial load)
-      if (!headline && !storytelling) {
-        setHeadline(currentProject.headline || '');
-        setStorytelling(currentProject.storytelling || '');
-      }
+    if (currentProject && isInitialLoad) {
+      console.log('Loading project data:', currentProject.headline, currentProject.storytelling);
+      setHeadline(currentProject.headline || '');
+      setStorytelling(currentProject.storytelling || '');
+      setIsInitialLoad(false);
     }
-  }, [currentProject?.id, currentProject?.headline, currentProject?.storytelling]);
+  }, [currentProject, isInitialLoad]);
 
   const handleRegenerate = useCallback(async () => {
     if (!currentProject?.productImage || !canRegenerate) return;
