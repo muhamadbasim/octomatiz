@@ -2,6 +2,11 @@
 name = "octomatiz"
 compatibility_date = "2024-12-01"
 
+# KV Namespace for storing landing pages
+[[kv_namespaces]]
+binding = "LANDING_PAGES"
+id = "36cbfd94d01a4ce9ad66eb9be732313a"
+
 # Environment variables for local development with wrangler
 # For production, set these in Cloudflare Dashboard > Settings > Environment Variables
 [vars]

@@ -70,28 +70,33 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
   }, []);
 
   const updateProjectAction = useCallback((id: string, data: Partial<Project>) => {
+    // Get current project from storage to ensure we have latest data
+    const existingProject = getProject(id);
+    if (!existingProject) return;
+
+    const updated = {
+      ...existingProject,
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Save to localStorage FIRST (synchronous)
+    saveProjectToStorage(updated);
+
+    // Then update React state
     setProjects(prev => {
       const index = prev.findIndex(p => p.id === id);
-      if (index < 0) return prev;
-
-      const updated = {
-        ...prev[index],
-        ...data,
-        updatedAt: new Date().toISOString(),
-      };
-
-      saveProjectToStorage(updated);
+      if (index < 0) return [...prev, updated];
 
       const newProjects = [...prev];
       newProjects[index] = updated;
-
-      // Update current project if it's the one being updated
-      if (currentProject?.id === id) {
-        setCurrentProject(updated);
-      }
-
       return newProjects;
     });
+
+    // Update current project if it's the one being updated
+    if (currentProject?.id === id) {
+      setCurrentProject(updated);
+    }
   }, [currentProject]);
 
   const deleteProjectAction = useCallback((id: string) => {

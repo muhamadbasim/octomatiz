@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
-import { useContentGeneration } from '../../hooks/useContentGeneration';
 import { compressImage, getBase64SizeKB, formatFileSize } from '../../lib/imageCompressor';
 import { TipsModal } from './TipsModal';
 
@@ -13,11 +12,6 @@ export function Step2Capture() {
   const [imageSize, setImageSize] = useState<string | null>(null);
   const [showTips, setShowTips] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { generate, isGenerating, content, error: aiError } = useContentGeneration({
-    category: currentProject?.category || 'kuliner',
-    businessName: currentProject?.businessName || '',
-  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,26 +27,8 @@ export function Step2Capture() {
     }
   }, [currentProject?.id]);
 
-  // Handle AI generation result
-  useEffect(() => {
-    if (content && currentProject && isScanning) {
-      updateProject(currentProject.id, {
-        productImage: capturedImage || undefined,
-        headline: content.headline,
-        storytelling: content.storytelling,
-      });
-      setCurrentStep(3);
-      window.location.href = `/create/step-3?id=${currentProject.id}`;
-    }
-  }, [content]);
-
-  // Handle AI error
-  useEffect(() => {
-    if (aiError && isScanning) {
-      setScanError(aiError);
-      setIsScanning(false);
-    }
-  }, [aiError]);
+  // Note: AI generation is now handled directly in handleContinue
+  // to avoid race conditions with useEffect and state updates
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,15 +73,82 @@ export function Step2Capture() {
     setIsScanning(true);
     setScanError(null);
     
-    updateProject(currentProject.id, { productImage: capturedImage });
-    await generate(capturedImage);
+    // Call AI API
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: capturedImage,
+          category: currentProject.category,
+          businessName: currentProject.businessName,
+        }),
+      });
+      
+      const result = await response.json();
+      console.log('AI API result:', result);
+      
+      if (result.success && result.data) {
+        // Save DIRECTLY to localStorage to avoid any race conditions
+        try {
+          const projectsData = localStorage.getItem('octomatiz_projects');
+          const projects = projectsData ? JSON.parse(projectsData) : [];
+          const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+          
+          if (projectIndex >= 0) {
+            projects[projectIndex] = {
+              ...projects[projectIndex],
+              productImage: capturedImage,
+              headline: result.data.headline,
+              storytelling: result.data.storytelling,
+              currentStep: 3,
+              updatedAt: new Date().toISOString(),
+            };
+            
+            localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
+            console.log('Saved directly to localStorage:', projects[projectIndex]);
+          }
+        } catch (e) {
+          console.error('Error saving to localStorage:', e);
+        }
+        
+        // Navigate to step 3
+        window.location.href = `/create/step-3?id=${currentProject.id}`;
+      } else {
+        setScanError(result.error?.message || 'Gagal menganalisis foto');
+        setIsScanning(false);
+      }
+    } catch (err) {
+      console.error('AI API error:', err);
+      setScanError('Koneksi gagal. Periksa internet dan coba lagi.');
+      setIsScanning(false);
+    }
   };
 
   const handleSkipAI = () => {
     if (!capturedImage || !currentProject) return;
     
-    updateProject(currentProject.id, { productImage: capturedImage });
-    setCurrentStep(3);
+    // Save DIRECTLY to localStorage
+    try {
+      const projectsData = localStorage.getItem('octomatiz_projects');
+      const projects = projectsData ? JSON.parse(projectsData) : [];
+      const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+      
+      if (projectIndex >= 0) {
+        projects[projectIndex] = {
+          ...projects[projectIndex],
+          productImage: capturedImage,
+          currentStep: 3,
+          updatedAt: new Date().toISOString(),
+        };
+        
+        localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
+        console.log('Saved image directly to localStorage (skip AI)');
+      }
+    } catch (e) {
+      console.error('Error saving to localStorage:', e);
+    }
+    
     window.location.href = `/create/step-3?id=${currentProject.id}`;
   };
 
@@ -129,7 +172,7 @@ export function Step2Capture() {
     );
   }
 
-  if (isScanning || isGenerating) {
+  if (isScanning) {
     return (
       <div className="fixed inset-0 bg-background-dark z-50 flex flex-col items-center justify-center px-6">
         <div className="relative mb-8">
