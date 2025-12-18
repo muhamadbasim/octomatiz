@@ -5,6 +5,18 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2024-12-18
+
+### Fixed
+- **FAB Position** - Tombol floating "+" sekarang di atas navbar (tidak terhalang)
+- **useProjects Hook** - Expose `updateProject` untuk edit proyek live
+
+### Changed
+- Dashboard heading: "Project Terbaru Anda" → "Orang Yang Sudah Dibantu Kamu"
+- Step 1 heading: "Siapa Klienmu?" → "Siapa yang akan dibantu hari ini?"
+
+---
+
 ## [1.3.0] - 2024-12-18
 
 ### Added
@@ -108,6 +120,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.3.1   | 2024-12-18 | FAB position fix & text updates|
 | 1.3.0   | 2024-12-18 | Dashboard enhancements         |
 | 1.2.0   | 2024-12-17 | UX improvements bundle         |
 | 1.1.0   | 2024-12-17 | Image compression feature      |
