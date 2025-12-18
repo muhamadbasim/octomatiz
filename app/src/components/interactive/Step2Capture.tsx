@@ -73,10 +73,7 @@ export function Step2Capture() {
     setIsScanning(true);
     setScanError(null);
     
-    // Save image first
-    updateProject(currentProject.id, { productImage: capturedImage });
-    
-    // Call AI API directly here instead of relying on useEffect
+    // Call AI API
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -92,18 +89,30 @@ export function Step2Capture() {
       console.log('AI API result:', result);
       
       if (result.success && result.data) {
-        // Save headline and storytelling to localStorage
-        const projectData = {
-          productImage: capturedImage,
-          headline: result.data.headline,
-          storytelling: result.data.storytelling,
-        };
+        // Save DIRECTLY to localStorage to avoid any race conditions
+        try {
+          const projectsData = localStorage.getItem('octomatiz_projects');
+          const projects = projectsData ? JSON.parse(projectsData) : [];
+          const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+          
+          if (projectIndex >= 0) {
+            projects[projectIndex] = {
+              ...projects[projectIndex],
+              productImage: capturedImage,
+              headline: result.data.headline,
+              storytelling: result.data.storytelling,
+              currentStep: 3,
+              updatedAt: new Date().toISOString(),
+            };
+            
+            localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
+            console.log('Saved directly to localStorage:', projects[projectIndex]);
+          }
+        } catch (e) {
+          console.error('Error saving to localStorage:', e);
+        }
         
-        console.log('Saving to localStorage:', projectData);
-        updateProject(currentProject.id, projectData);
-        setCurrentStep(3);
-        
-        // Navigate after save
+        // Navigate to step 3
         window.location.href = `/create/step-3?id=${currentProject.id}`;
       } else {
         setScanError(result.error?.message || 'Gagal menganalisis foto');
@@ -119,8 +128,27 @@ export function Step2Capture() {
   const handleSkipAI = () => {
     if (!capturedImage || !currentProject) return;
     
-    updateProject(currentProject.id, { productImage: capturedImage });
-    setCurrentStep(3);
+    // Save DIRECTLY to localStorage
+    try {
+      const projectsData = localStorage.getItem('octomatiz_projects');
+      const projects = projectsData ? JSON.parse(projectsData) : [];
+      const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+      
+      if (projectIndex >= 0) {
+        projects[projectIndex] = {
+          ...projects[projectIndex],
+          productImage: capturedImage,
+          currentStep: 3,
+          updatedAt: new Date().toISOString(),
+        };
+        
+        localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
+        console.log('Saved image directly to localStorage (skip AI)');
+      }
+    } catch (e) {
+      console.error('Error saving to localStorage:', e);
+    }
+    
     window.location.href = `/create/step-3?id=${currentProject.id}`;
   };
 

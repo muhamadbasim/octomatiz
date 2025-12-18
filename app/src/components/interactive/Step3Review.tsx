@@ -16,6 +16,9 @@ export function Step3Review() {
 
   const canRegenerate = regenerateCount < MAX_REGENERATE && !!currentProject?.productImage;
 
+  // State for product image from localStorage
+  const [localProductImage, setLocalProductImage] = useState<string | null>(null);
+
   // Load data on mount - read directly from localStorage to avoid race conditions
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -29,9 +32,14 @@ export function Step3Review() {
           const projects = JSON.parse(projectsData);
           const project = projects.find((p: { id: string }) => p.id === projectId);
           if (project) {
-            console.log('Direct localStorage read - headline:', project.headline, 'storytelling:', project.storytelling);
+            console.log('Direct localStorage read:', {
+              headline: project.headline,
+              storytelling: project.storytelling,
+              hasImage: !!project.productImage
+            });
             setHeadline(project.headline || '');
             setStorytelling(project.storytelling || '');
+            setLocalProductImage(project.productImage || null);
           }
         }
       } catch (e) {
@@ -94,7 +102,8 @@ export function Step3Review() {
     window.location.href = `/create/step-4?id=${currentProject.id}`;
   };
 
-  const productImage = currentProject?.productImage;
+  // Use localProductImage as primary (from direct localStorage read), fallback to context
+  const productImage = localProductImage || currentProject?.productImage;
   const hasImage = !!productImage;
 
   return (
