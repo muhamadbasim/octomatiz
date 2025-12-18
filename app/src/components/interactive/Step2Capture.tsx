@@ -37,19 +37,25 @@ export function Step2Capture() {
   useEffect(() => {
     // Only proceed if we have content, a project, and generation just finished
     if (content && currentProject && !isGenerating && isScanning) {
-      console.log('AI content ready, navigating to step 3...');
+      console.log('AI content ready:', content);
       
-      // Save data first
-      updateProject(currentProject.id, {
+      // Save data first and wait for it to complete
+      const projectData = {
         productImage: capturedImage || undefined,
         headline: content.headline,
         storytelling: content.storytelling,
-      });
+      };
+      
+      updateProject(currentProject.id, projectData);
       setCurrentStep(3);
       
-      // Reset scanning state and navigate
+      // Reset scanning state
       setIsScanning(false);
-      window.location.href = `/create/step-3?id=${currentProject.id}`;
+      
+      // Small delay to ensure localStorage is updated before navigation
+      setTimeout(() => {
+        window.location.href = `/create/step-3?id=${currentProject.id}`;
+      }, 150);
     }
   }, [content, isGenerating]);
 

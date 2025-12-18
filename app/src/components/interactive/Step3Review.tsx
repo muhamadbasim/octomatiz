@@ -24,12 +24,23 @@ export function Step3Review() {
     }
   }, []);
 
+  // Load content when project changes or when headline/storytelling updates
   useEffect(() => {
     if (currentProject) {
-      setHeadline(currentProject.headline || '');
-      setStorytelling(currentProject.storytelling || '');
+      // Only update if values are different to avoid overwriting user edits
+      if (currentProject.headline && headline !== currentProject.headline) {
+        setHeadline(currentProject.headline);
+      }
+      if (currentProject.storytelling && storytelling !== currentProject.storytelling) {
+        setStorytelling(currentProject.storytelling);
+      }
+      // If both are empty, set from project (initial load)
+      if (!headline && !storytelling) {
+        setHeadline(currentProject.headline || '');
+        setStorytelling(currentProject.storytelling || '');
+      }
     }
-  }, [currentProject?.id]);
+  }, [currentProject?.id, currentProject?.headline, currentProject?.storytelling]);
 
   const handleRegenerate = useCallback(async () => {
     if (!currentProject?.productImage || !canRegenerate) return;
