@@ -3,10 +3,10 @@ import { useProjectContext } from '../../context/ProjectContext';
 import { TemplatePreviewModal } from './TemplatePreviewModal';
 import type { TemplateStyle, ColorTheme } from '../../types/project';
 
-const TEMPLATES: { id: TemplateStyle; name: string; description: string; image: string }[] = [
-  { id: 'simple', name: 'Simple Clean', description: 'Minimalis & profesional', image: 'https://via.placeholder.com/144x108/1a1a2e/36e27b?text=Simple' },
-  { id: 'warm', name: 'Warm Culinary', description: 'Hangat untuk kuliner', image: 'https://via.placeholder.com/144x108/2d1f1f/f59e0b?text=Warm' },
-  { id: 'modern', name: 'Modern Blue', description: 'Modern & elegan', image: 'https://via.placeholder.com/144x108/1f2937/2563eb?text=Modern' },
+const TEMPLATES: { id: TemplateStyle; name: string; description: string; bgClass: string; accent: string }[] = [
+  { id: 'simple', name: 'Simple Clean', description: 'Minimalis & profesional', bgClass: 'bg-gradient-to-br from-white to-gray-100', accent: '#36e27b' },
+  { id: 'warm', name: 'Warm Culinary', description: 'Hangat untuk kuliner', bgClass: 'bg-gradient-to-br from-amber-50 to-orange-100', accent: '#f59e0b' },
+  { id: 'modern', name: 'Modern Blue', description: 'Modern & elegan', bgClass: 'bg-gradient-to-br from-slate-800 to-slate-900', accent: '#2563eb' },
 ];
 
 const COLORS: { id: ColorTheme; hex: string; name: string }[] = [
@@ -141,17 +141,25 @@ export function Step4Design() {
                   </div>
                 )}
                 <div 
-                  className="w-full aspect-[4/3] bg-gray-800 rounded-xl mb-3 overflow-hidden relative"
+                  className={`w-full aspect-[4/3] rounded-xl mb-3 overflow-hidden relative ${t.bgClass}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePreviewTemplate(t.id);
                   }}
                 >
-                  <img
-                    alt={t.name}
-                    className={`w-full h-full object-cover ${template === t.id ? 'opacity-80' : 'opacity-60'}`}
-                    src={t.image}
-                  />
+                  {/* Mini template preview */}
+                  <div className="w-full h-full p-2 flex flex-col">
+                    {/* Header bar */}
+                    <div className="h-3 rounded-sm mb-1" style={{ backgroundColor: t.accent }} />
+                    {/* Content lines */}
+                    <div className={`flex-1 flex flex-col gap-1 ${t.id === 'modern' ? 'opacity-60' : 'opacity-40'}`}>
+                      <div className="h-2 w-3/4 rounded-sm" style={{ backgroundColor: t.id === 'modern' ? '#fff' : '#333' }} />
+                      <div className="h-1.5 w-full rounded-sm" style={{ backgroundColor: t.id === 'modern' ? '#64748b' : '#666' }} />
+                      <div className="h-1.5 w-2/3 rounded-sm" style={{ backgroundColor: t.id === 'modern' ? '#64748b' : '#666' }} />
+                    </div>
+                    {/* CTA button */}
+                    <div className="h-3 w-full rounded-full mt-auto" style={{ backgroundColor: t.accent }} />
+                  </div>
                   {/* Preview overlay */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="material-symbols-outlined text-white text-2xl">visibility</span>
