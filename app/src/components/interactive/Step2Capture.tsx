@@ -33,26 +33,33 @@ export function Step2Capture() {
     }
   }, [currentProject?.id]);
 
-  // Handle AI generation result
+  // Handle AI generation result - navigate when content is ready and not generating
   useEffect(() => {
-    if (content && currentProject && isScanning) {
+    // Only proceed if we have content, a project, and generation just finished
+    if (content && currentProject && !isGenerating && isScanning) {
+      console.log('AI content ready, navigating to step 3...');
+      
+      // Save data first
       updateProject(currentProject.id, {
         productImage: capturedImage || undefined,
         headline: content.headline,
         storytelling: content.storytelling,
       });
       setCurrentStep(3);
+      
+      // Reset scanning state and navigate
+      setIsScanning(false);
       window.location.href = `/create/step-3?id=${currentProject.id}`;
     }
-  }, [content]);
+  }, [content, isGenerating]);
 
   // Handle AI error
   useEffect(() => {
-    if (aiError && isScanning) {
+    if (aiError && !isGenerating) {
       setScanError(aiError);
       setIsScanning(false);
     }
-  }, [aiError]);
+  }, [aiError, isGenerating]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
