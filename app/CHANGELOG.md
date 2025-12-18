@@ -5,6 +5,22 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2024-12-18
+
+### Added
+- **Real Landing Page Deployment** - Landing page sekarang benar-benar di-deploy ke Cloudflare KV
+  - Route `/p/[slug]` untuk serve landing page dari KV storage
+  - Dynamic URL generation berdasarkan environment (preview/production)
+  - Unique slug generation untuk setiap landing page
+- **Step 2 → Step 3 Data Flow Fix** - AI-generated content sekarang persist dengan benar
+  - Save langsung ke localStorage sebelum navigasi (bypass React context race condition)
+
+### Fixed
+- **Service Worker Cache** - Route `/p/*` dan `/api/*` tidak di-cache oleh Service Worker
+- **Dynamic Base URL** - URL landing page sesuai dengan environment (preview branch vs production)
+
+---
+
 ## [1.4.0] - 2024-12-18
 
 ### Fixed
@@ -134,6 +150,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.5.0   | 2024-12-18 | Real landing page deployment   |
 | 1.4.0   | 2024-12-18 | Fix Cloudflare env for AI API  |
 | 1.3.1   | 2024-12-18 | FAB position fix & text updates|
 | 1.3.0   | 2024-12-18 | Dashboard enhancements         |
