@@ -86,13 +86,12 @@ export const POST: APIRoute = async (context) => {
     const baseSlug = generateSlug(project.businessName);
     const slug = await getUniqueSlug(kv, baseSlug);
     
-    // Determine base URL
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://octomatiz.pages.dev'
-      : 'http://localhost:4321';
+    // Determine base URL from request (supports preview branches)
+    const requestUrl = new URL(request.url);
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
     
     const url = `${baseUrl}/p/${slug}`;
-    const domain = `octomatiz.pages.dev/p/${slug}`;
+    const domain = `${requestUrl.host}/p/${slug}`;
 
     // Store to KV if available
     if (kv) {
