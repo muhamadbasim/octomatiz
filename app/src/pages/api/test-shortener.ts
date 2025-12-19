@@ -1,26 +1,27 @@
 import type { APIRoute } from 'astro';
-import { createInternalShortUrl, generateShortCode } from '../../lib/urlShortener';
+import { shortenUrl } from '../../lib/urlShortener';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
   const requestUrl = new URL(request.url);
   const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+  const testUrl = `${baseUrl}/p/test-business`;
   const testSlug = 'test-business';
   
-  console.log('Testing internal URL shortener');
+  console.log('Testing URL shortener with:', testUrl);
   
   try {
-    const result = createInternalShortUrl(baseUrl, testSlug);
-    const sampleCode = generateShortCode();
+    // Test with fallback to internal
+    const result = await shortenUrl(testUrl, baseUrl, testSlug);
+    
+    console.log('Shortener result:', result);
     
     return new Response(
       JSON.stringify({
-        baseUrl,
-        testSlug,
+        testUrl,
         result,
-        sampleCode,
-        explanation: 'Internal shortener uses KV to map /s/{code} -> /p/{slug}',
+        providers: ['clck.ru (Yandex)', 'v.gd', 'internal (fallback)'],
         timestamp: new Date().toISOString(),
       }),
       {
@@ -33,6 +34,7 @@ export const GET: APIRoute = async ({ request }) => {
     
     return new Response(
       JSON.stringify({
+        testUrl,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       }),

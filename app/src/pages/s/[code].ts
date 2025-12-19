@@ -19,7 +19,6 @@ export const GET: APIRoute = async (context) => {
   const kv = getKV(context);
   
   if (!kv) {
-    // Fallback: redirect to homepage if KV not available
     return new Response(null, {
       status: 302,
       headers: { Location: '/' },
@@ -27,18 +26,15 @@ export const GET: APIRoute = async (context) => {
   }
 
   try {
-    // Look up the slug from short code
     const slug = await kv.get(`short:${code}`);
     
     if (!slug) {
       return new Response('Link tidak ditemukan', { status: 404 });
     }
 
-    // Get base URL from request
     const requestUrl = new URL(request.url);
     const targetUrl = `${requestUrl.protocol}//${requestUrl.host}/p/${slug}`;
 
-    // Redirect to the landing page
     return new Response(null, {
       status: 302,
       headers: { Location: targetUrl },
