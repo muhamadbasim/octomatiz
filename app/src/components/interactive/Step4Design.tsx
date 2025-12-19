@@ -17,7 +17,7 @@ const COLORS: { id: ColorTheme; hex: string; name: string }[] = [
 ];
 
 export function Step4Design() {
-  const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
+  const { currentProject, loadProject } = useProjectContext();
   const [template, setTemplate] = useState<TemplateStyle>('simple');
   const [colorTheme, setColorTheme] = useState<ColorTheme>('green');
   const [previewTemplate, setPreviewTemplate] = useState<TemplateStyle | null>(null);
@@ -44,10 +44,14 @@ export function Step4Design() {
     }
   }, [currentProject, isInitialized]);
   
-  // Log whenever template state changes
+  // Log whenever template or colorTheme state changes
   useEffect(() => {
     console.log('Step 4: Template state changed to:', template);
   }, [template]);
+  
+  useEffect(() => {
+    console.log('Step 4: ColorTheme state changed to:', colorTheme);
+  }, [colorTheme]);
 
   const handlePublish = () => {
     if (!currentProject) {
@@ -97,11 +101,19 @@ export function Step4Design() {
         if (verifyStored) {
           const verifyProjects = JSON.parse(verifyStored);
           const verifyProject = verifyProjects.find((p: { id: string }) => p.id === projectId);
-          console.log('Step 4: VERIFIED template in localStorage:', verifyProject?.template);
+          console.log('Step 4: VERIFIED in localStorage:', {
+            template: verifyProject?.template,
+            colorTheme: verifyProject?.colorTheme,
+          });
           
-          if (verifyProject?.template !== template) {
-            console.error('Step 4: VERIFICATION FAILED! Template not saved correctly!');
-            alert('Error: Gagal menyimpan template. Silakan coba lagi.');
+          if (verifyProject?.template !== template || verifyProject?.colorTheme !== colorTheme) {
+            console.error('Step 4: VERIFICATION FAILED!', {
+              expectedTemplate: template,
+              actualTemplate: verifyProject?.template,
+              expectedColor: colorTheme,
+              actualColor: verifyProject?.colorTheme,
+            });
+            alert('Error: Gagal menyimpan. Silakan coba lagi.');
             return;
           }
         }
@@ -254,7 +266,10 @@ export function Step4Design() {
             {COLORS.map((color) => (
               <button
                 key={color.id}
-                onClick={() => setColorTheme(color.id)}
+                onClick={() => {
+                  console.log('Step 4: User clicked color:', color.id);
+                  setColorTheme(color.id);
+                }}
                 className="flex flex-col items-center gap-2"
               >
                 <div
