@@ -40,63 +40,71 @@ export function Step4Design() {
   const handlePublish = () => {
     if (!currentProject) {
       console.error('Step 4: currentProject is null!');
+      alert('Error: Project tidak ditemukan. Silakan refresh halaman.');
       return;
     }
     
+    const projectId = currentProject.id;
+    
     console.log('Step 4: handlePublish called with:', {
-      projectId: currentProject.id,
+      projectId,
       selectedTemplate: template,
       selectedColorTheme: colorTheme,
     });
     
-    // Save directly to localStorage BEFORE navigation (bypass React state race condition)
+    // Save directly to localStorage ONLY (don't use updateProject to avoid race condition)
     const STORAGE_KEY = 'octomatiz_projects';
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       const projects = stored ? JSON.parse(stored) : [];
-      const index = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+      const index = projects.findIndex((p: { id: string }) => p.id === projectId);
       
       console.log('Step 4: Found project at index:', index);
       
       if (index >= 0) {
-        const updatedProject = {
+        // Update project with new template and colorTheme
+        projects[index] = {
           ...projects[index],
-          template,
-          colorTheme,
+          template: template,  // Explicitly set template
+          colorTheme: colorTheme,  // Explicitly set colorTheme
           status: 'building',
           currentStep: 5,
           updatedAt: new Date().toISOString(),
         };
-        projects[index] = updatedProject;
+        
+        // Save to localStorage
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         
         console.log('Step 4: Saved to localStorage:', {
-          template: updatedProject.template,
-          colorTheme: updatedProject.colorTheme,
+          template: projects[index].template,
+          colorTheme: projects[index].colorTheme,
         });
         
-        // Verify save
-        const verify = localStorage.getItem(STORAGE_KEY);
-        const verifyProjects = JSON.parse(verify || '[]');
-        const verifyProject = verifyProjects.find((p: { id: string }) => p.id === currentProject.id);
-        console.log('Step 4: Verification - template in localStorage:', verifyProject?.template);
+        // Verify save immediately
+        const verifyStored = localStorage.getItem(STORAGE_KEY);
+        if (verifyStored) {
+          const verifyProjects = JSON.parse(verifyStored);
+          const verifyProject = verifyProjects.find((p: { id: string }) => p.id === projectId);
+          console.log('Step 4: VERIFIED template in localStorage:', verifyProject?.template);
+          
+          if (verifyProject?.template !== template) {
+            console.error('Step 4: VERIFICATION FAILED! Template not saved correctly!');
+            alert('Error: Gagal menyimpan template. Silakan coba lagi.');
+            return;
+          }
+        }
+        
+        // Navigate to Step 5 (DON'T call updateProject - it causes race condition)
+        console.log('Step 4: Navigating to Step 5...');
+        window.location.href = `/create/step-5?id=${projectId}`;
       } else {
         console.error('Step 4: Project not found in localStorage!');
+        alert('Error: Project tidak ditemukan di storage. Silakan mulai ulang.');
       }
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
+      alert('Error: Gagal menyimpan. Silakan coba lagi.');
     }
-    
-    // Also update React context (for consistency)
-    updateProject(currentProject.id, { 
-      template, 
-      colorTheme,
-      status: 'building'
-    });
-    setCurrentStep(5);
-    
-    // Navigate to Step 5
-    window.location.href = `/create/step-5?id=${currentProject.id}`;
   };
 
   const handlePreviewTemplate = (templateId: TemplateStyle) => {
