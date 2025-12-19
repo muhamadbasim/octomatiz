@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
 import { TemplatePreviewModal } from './TemplatePreviewModal';
-import type { TemplateStyle, ColorTheme, Project } from '../../types/project';
+import type { TemplateStyle, ColorTheme } from '../../types/project';
 
 const TEMPLATES: { id: TemplateStyle; name: string; description: string; bgClass: string; accent: string }[] = [
   { id: 'simple', name: 'Simple Clean', description: 'Minimalis & profesional', bgClass: 'bg-gradient-to-br from-white to-gray-100', accent: '#36e27b' },
@@ -44,26 +44,21 @@ export function Step4Design() {
     const STORAGE_KEY = 'octomatiz_projects';
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      const projects: Project[] = stored ? JSON.parse(stored) : [];
-      const index = projects.findIndex(p => p.id === currentProject.id);
-      
-      const updatedProject = {
-        ...currentProject,
-        template,
-        colorTheme,
-        status: 'building' as const,
-        currentStep: 5,
-        updatedAt: new Date().toISOString(),
-      };
+      const projects = stored ? JSON.parse(stored) : [];
+      const index = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
       
       if (index >= 0) {
-        projects[index] = updatedProject;
-      } else {
-        projects.push(updatedProject);
+        projects[index] = {
+          ...projects[index],
+          template,
+          colorTheme,
+          status: 'building',
+          currentStep: 5,
+          updatedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        console.log('Step 4: Saved template directly to localStorage:', { template, colorTheme });
       }
-      
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-      console.log('Step 4: Saved template directly to localStorage:', { template, colorTheme });
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
     }

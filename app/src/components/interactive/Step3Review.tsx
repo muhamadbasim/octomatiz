@@ -97,8 +97,33 @@ export function Step3Review() {
   const handleContinue = () => {
     if (!currentProject) return;
     
+    // Save directly to localStorage BEFORE navigation (bypass React state race condition)
+    const STORAGE_KEY = 'octomatiz_projects';
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const projects = stored ? JSON.parse(stored) : [];
+      const index = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
+      
+      if (index >= 0) {
+        projects[index] = {
+          ...projects[index],
+          headline,
+          storytelling,
+          currentStep: 4,
+          updatedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        console.log('Step 3: Saved content directly to localStorage');
+      }
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
+    
+    // Also update React context (for consistency)
     updateProject(currentProject.id, { headline, storytelling });
     setCurrentStep(4);
+    
+    // Navigate to Step 4
     window.location.href = `/create/step-4?id=${currentProject.id}`;
   };
 
