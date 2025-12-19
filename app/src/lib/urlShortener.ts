@@ -1,46 +1,49 @@
 /**
- * URL Shortener Service using ulvis.net API
- * Free, no API key required, no ads, direct redirect
+ * Internal URL Shortener using Cloudflare KV
+ * Creates short codes like /s/abc123 that redirect to /p/slug
+ * No external dependencies - 100% reliable
  */
 
 export interface ShortUrlResult {
   success: boolean;
   shortUrl?: string;
+  shortCode?: string;
   error?: string;
 }
 
 /**
- * Shorten URL using ulvis.net API
- * @param longUrl - The original long URL to shorten
- * @returns Promise with short URL result
+ * Generate a random short code (6 chars alphanumeric)
  */
-export async function shortenUrl(longUrl: string): Promise<ShortUrlResult> {
+export function generateShortCode(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+/**
+ * Create internal short URL
+ * @param baseUrl - Base URL of the site (e.g., https://octomatiz.pages.dev)
+ * @param slug - The landing page slug
+ * @returns Short URL result with code
+ */
+export function createInternalShortUrl(baseUrl: string, slug: string): ShortUrlResult {
   try {
-    // ulvis.net API endpoint (free, no auth required, no ads)
-    const apiUrl = `https://ulvis.net/api.php?url=${encodeURIComponent(longUrl)}&private=1`;
-
-    const response = await fetch(apiUrl);
-
-    if (!response.ok) {
-      throw new Error(`ulvis.net API error: ${response.status}`);
-    }
-
-    const shortUrl = await response.text();
-
-    // Validate response is a valid URL
-    if (!shortUrl.trim().startsWith('https://ulvis.net/')) {
-      throw new Error('Invalid response from ulvis.net');
-    }
-
+    const shortCode = generateShortCode();
+    const shortUrl = `${baseUrl}/s/${shortCode}`;
+    
     return {
       success: true,
-      shortUrl: shortUrl.trim(),
+      shortUrl,
+      shortCode,
     };
   } catch (error) {
-    console.error('URL shortening failed:', error);
+    console.error('Short URL generation failed:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to shorten URL',
+      error: error instanceof Error ? error.message : 'Failed to generate short URL',
     };
   }
 }
