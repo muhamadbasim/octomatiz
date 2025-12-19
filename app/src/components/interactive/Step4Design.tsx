@@ -21,6 +21,7 @@ export function Step4Design() {
   const [template, setTemplate] = useState<TemplateStyle>('simple');
   const [colorTheme, setColorTheme] = useState<ColorTheme>('green');
   const [previewTemplate, setPreviewTemplate] = useState<TemplateStyle | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -30,12 +31,23 @@ export function Step4Design() {
     }
   }, []);
 
+  // Initialize template/colorTheme from project ONLY ONCE
   useEffect(() => {
-    if (currentProject) {
+    if (currentProject && !isInitialized) {
+      console.log('Step 4: Initializing from project:', {
+        projectTemplate: currentProject.template,
+        projectColorTheme: currentProject.colorTheme,
+      });
       setTemplate(currentProject.template || 'simple');
       setColorTheme(currentProject.colorTheme || 'green');
+      setIsInitialized(true);
     }
-  }, [currentProject?.id]);
+  }, [currentProject, isInitialized]);
+  
+  // Log whenever template state changes
+  useEffect(() => {
+    console.log('Step 4: Template state changed to:', template);
+  }, [template]);
 
   const handlePublish = () => {
     if (!currentProject) {
@@ -186,7 +198,10 @@ export function Step4Design() {
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setTemplate(t.id)}
+                onClick={() => {
+                  console.log('Step 4: User clicked template:', t.id);
+                  setTemplate(t.id);
+                }}
                 className={`snap-center shrink-0 w-36 p-3 rounded-2xl cursor-pointer relative group ${
                   template === t.id
                     ? 'bg-black/40 border-2 border-primary'
