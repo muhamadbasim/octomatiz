@@ -5,6 +5,21 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2024-12-19
+
+### Added
+- **URL Shortener Integration** - Short URL untuk landing page yang mudah dibagikan
+  - Primary: clck.ru (Yandex) - reliable dari Cloudflare Workers
+  - Fallback: v.gd → internal `/s/{code}` shortener
+  - Tampilan 2 link di Step 5: short URL (hijau) + original URL (putih)
+- **Internal Short URL Route** - `/s/[code]` untuk fallback shortener dengan KV mapping
+
+### Changed
+- Step 5 success screen sekarang menampilkan 2 link yang bisa di-copy
+- Service Worker denylist ditambah `/s/` route
+
+---
+
 ## [1.5.0] - 2024-12-18
 
 ### Added
@@ -150,6 +165,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.6.0   | 2024-12-19 | URL shortener with clck.ru     |
 | 1.5.0   | 2024-12-18 | Real landing page deployment   |
 | 1.4.0   | 2024-12-18 | Fix Cloudflare env for AI API  |
 | 1.3.1   | 2024-12-18 | FAB position fix & text updates|
