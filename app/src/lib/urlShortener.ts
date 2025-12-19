@@ -1,6 +1,7 @@
 /**
- * URL Shortener Service using CleanURI API
+ * URL Shortener Service using da.gd API
  * Free, no API key required, no ads, direct redirect
+ * Shortest domain available (da.gd/xxxxx)
  */
 
 export interface ShortUrlResult {
@@ -9,41 +10,32 @@ export interface ShortUrlResult {
   error?: string;
 }
 
-interface CleanURIResponse {
-  result_url?: string;
-  error?: string;
-}
-
 /**
- * Shorten URL using CleanURI API
+ * Shorten URL using da.gd API
  * @param longUrl - The original long URL to shorten
  * @returns Promise with short URL result
  */
 export async function shortenUrl(longUrl: string): Promise<ShortUrlResult> {
   try {
-    // CleanURI API endpoint (free, no auth required, no ads)
-    const response = await fetch('https://cleanuri.com/api/v1/shorten', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: `url=${encodeURIComponent(longUrl)}`,
-    });
+    // da.gd API endpoint (free, no auth required, no ads, shortest domain)
+    const apiUrl = `https://da.gd/shorten?url=${encodeURIComponent(longUrl)}`;
+
+    const response = await fetch(apiUrl);
 
     if (!response.ok) {
-      throw new Error(`CleanURI API error: ${response.status}`);
+      throw new Error(`da.gd API error: ${response.status}`);
     }
 
-    const data: CleanURIResponse = await response.json();
+    const shortUrl = await response.text();
 
-    // Validate response
-    if (!data.result_url) {
-      throw new Error(data.error || 'Invalid response from CleanURI');
+    // Validate response is a valid URL
+    if (!shortUrl.trim().startsWith('https://da.gd/')) {
+      throw new Error('Invalid response from da.gd');
     }
 
     return {
       success: true,
-      shortUrl: data.result_url,
+      shortUrl: shortUrl.trim(),
     };
   } catch (error) {
     console.error('URL shortening failed:', error);
