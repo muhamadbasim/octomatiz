@@ -11,6 +11,7 @@ export interface DeploymentProgress {
 export interface DeploymentResult {
   success: boolean;
   url?: string;
+  shortUrl?: string;
   domain?: string;
   slug?: string;
   html?: string;
@@ -96,6 +97,7 @@ export async function deployProject(
     return {
       success: true,
       url: result.url,
+      shortUrl: result.shortUrl,
       domain: result.domain,
       slug: result.slug,
       html: result.html,

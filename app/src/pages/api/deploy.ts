@@ -1,6 +1,7 @@
 import type { APIRoute, APIContext } from 'astro';
 import type { Project } from '../../types/project';
 import { generateLandingPage } from '../../lib/landingPageGenerator';
+import { shortenUrl } from '../../lib/urlShortener';
 
 export const prerender = false;
 
@@ -110,10 +111,30 @@ export const POST: APIRoute = async (context) => {
       console.log('KV not available, returning simulated deployment');
     }
 
+    // Generate short URL (tries external services, falls back to internal)
+    let shortUrl: string | undefined;
+    try {
+      const shortResult = await shortenUrl(url, baseUrl, slug);
+      if (shortResult.success && shortResult.shortUrl) {
+        shortUrl = shortResult.shortUrl;
+        console.log(`Short URL generated via ${shortResult.provider}: ${shortUrl}`);
+        
+        // If internal shortener was used, store mapping in KV
+        if (shortResult.provider === 'internal' && shortResult.shortCode && kv) {
+          await kv.put(`short:${shortResult.shortCode}`, slug);
+          console.log(`Internal short mapping stored: ${shortResult.shortCode} -> ${slug}`);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to generate short URL:', err);
+      // Continue without short URL - not critical
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         url,
+        shortUrl, // is.gd short link (optional)
         domain,
         slug,
         html, // Include HTML for preview
