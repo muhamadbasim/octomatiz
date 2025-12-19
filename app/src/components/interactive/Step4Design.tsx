@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProjectContext } from '../../context/ProjectContext';
 import { TemplatePreviewModal } from './TemplatePreviewModal';
-import type { TemplateStyle, ColorTheme, Project } from '../../types/project';
+import type { TemplateStyle, ColorTheme } from '../../types/project';
 
 const TEMPLATES: { id: TemplateStyle; name: string; description: string; bgClass: string; accent: string }[] = [
   { id: 'simple', name: 'Simple Clean', description: 'Minimalis & profesional', bgClass: 'bg-gradient-to-br from-white to-gray-100', accent: '#36e27b' },
@@ -17,10 +17,11 @@ const COLORS: { id: ColorTheme; hex: string; name: string }[] = [
 ];
 
 export function Step4Design() {
-  const { currentProject, loadProject, updateProject, setCurrentStep } = useProjectContext();
+  const { currentProject, loadProject } = useProjectContext();
   const [template, setTemplate] = useState<TemplateStyle>('simple');
   const [colorTheme, setColorTheme] = useState<ColorTheme>('green');
   const [previewTemplate, setPreviewTemplate] = useState<TemplateStyle | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -30,54 +31,104 @@ export function Step4Design() {
     }
   }, []);
 
+  // Initialize template/colorTheme from project ONLY ONCE
   useEffect(() => {
-    if (currentProject) {
+    if (currentProject && !isInitialized) {
+      console.log('Step 4: Initializing from project:', {
+        projectTemplate: currentProject.template,
+        projectColorTheme: currentProject.colorTheme,
+      });
       setTemplate(currentProject.template || 'simple');
       setColorTheme(currentProject.colorTheme || 'green');
+      setIsInitialized(true);
     }
-  }, [currentProject?.id]);
+  }, [currentProject, isInitialized]);
+  
+  // Log whenever template or colorTheme state changes
+  useEffect(() => {
+    console.log('Step 4: Template state changed to:', template);
+  }, [template]);
+  
+  useEffect(() => {
+    console.log('Step 4: ColorTheme state changed to:', colorTheme);
+  }, [colorTheme]);
 
   const handlePublish = () => {
-    if (!currentProject) return;
+    if (!currentProject) {
+      console.error('Step 4: currentProject is null!');
+      alert('Error: Project tidak ditemukan. Silakan refresh halaman.');
+      return;
+    }
     
-    // Save directly to localStorage BEFORE navigation (bypass React state race condition)
+    const projectId = currentProject.id;
+    
+    console.log('Step 4: handlePublish called with:', {
+      projectId,
+      selectedTemplate: template,
+      selectedColorTheme: colorTheme,
+    });
+    
+    // Save directly to localStorage ONLY (don't use updateProject to avoid race condition)
     const STORAGE_KEY = 'octomatiz_projects';
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      const projects: Project[] = stored ? JSON.parse(stored) : [];
-      const index = projects.findIndex(p => p.id === currentProject.id);
+      const projects = stored ? JSON.parse(stored) : [];
+      const index = projects.findIndex((p: { id: string }) => p.id === projectId);
       
-      const updatedProject = {
-        ...currentProject,
-        template,
-        colorTheme,
-        status: 'building' as const,
-        currentStep: 5,
-        updatedAt: new Date().toISOString(),
-      };
+      console.log('Step 4: Found project at index:', index);
       
       if (index >= 0) {
-        projects[index] = updatedProject;
+        // Update project with new template and colorTheme
+        projects[index] = {
+          ...projects[index],
+          template: template,  // Explicitly set template
+          colorTheme: colorTheme,  // Explicitly set colorTheme
+          status: 'building',
+          currentStep: 5,
+          updatedAt: new Date().toISOString(),
+        };
+        
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        
+        console.log('Step 4: Saved to localStorage:', {
+          template: projects[index].template,
+          colorTheme: projects[index].colorTheme,
+        });
+        
+        // Verify save immediately
+        const verifyStored = localStorage.getItem(STORAGE_KEY);
+        if (verifyStored) {
+          const verifyProjects = JSON.parse(verifyStored);
+          const verifyProject = verifyProjects.find((p: { id: string }) => p.id === projectId);
+          console.log('Step 4: VERIFIED in localStorage:', {
+            template: verifyProject?.template,
+            colorTheme: verifyProject?.colorTheme,
+          });
+          
+          if (verifyProject?.template !== template || verifyProject?.colorTheme !== colorTheme) {
+            console.error('Step 4: VERIFICATION FAILED!', {
+              expectedTemplate: template,
+              actualTemplate: verifyProject?.template,
+              expectedColor: colorTheme,
+              actualColor: verifyProject?.colorTheme,
+            });
+            alert('Error: Gagal menyimpan. Silakan coba lagi.');
+            return;
+          }
+        }
+        
+        // Navigate to Step 5 (DON'T call updateProject - it causes race condition)
+        console.log('Step 4: Navigating to Step 5...');
+        window.location.href = `/create/step-5?id=${projectId}`;
       } else {
-        projects.push(updatedProject);
+        console.error('Step 4: Project not found in localStorage!');
+        alert('Error: Project tidak ditemukan di storage. Silakan mulai ulang.');
       }
-      
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-      console.log('Step 4: Saved template directly to localStorage:', { template, colorTheme });
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
+      alert('Error: Gagal menyimpan. Silakan coba lagi.');
     }
-    
-    // Also update React context (for consistency)
-    updateProject(currentProject.id, { 
-      template, 
-      colorTheme,
-      status: 'building'
-    });
-    setCurrentStep(5);
-    
-    // Navigate to Step 5
-    window.location.href = `/create/step-5?id=${currentProject.id}`;
   };
 
   const handlePreviewTemplate = (templateId: TemplateStyle) => {
@@ -159,7 +210,10 @@ export function Step4Design() {
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setTemplate(t.id)}
+                onClick={() => {
+                  console.log('Step 4: User clicked template:', t.id);
+                  setTemplate(t.id);
+                }}
                 className={`snap-center shrink-0 w-36 p-3 rounded-2xl cursor-pointer relative group ${
                   template === t.id
                     ? 'bg-black/40 border-2 border-primary'
@@ -212,7 +266,10 @@ export function Step4Design() {
             {COLORS.map((color) => (
               <button
                 key={color.id}
-                onClick={() => setColorTheme(color.id)}
+                onClick={() => {
+                  console.log('Step 4: User clicked color:', color.id);
+                  setColorTheme(color.id);
+                }}
                 className="flex flex-col items-center gap-2"
               >
                 <div

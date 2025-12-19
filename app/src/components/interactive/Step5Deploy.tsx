@@ -24,12 +24,53 @@ export function Step5Deploy() {
   const [showPreview, setShowPreview] = useState(false);
   const [deployStarted, setDeployStarted] = useState(false);
   const [shortUrl, setShortUrl] = useState<string | null>(null);
+  
+  // Store fresh project data from localStorage to avoid stale context data
+  const [freshProject, setFreshProject] = useState<typeof currentProject>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
-    if (projectId && !currentProject) {
-      loadProject(projectId);
+    
+    if (projectId) {
+      // Read directly from localStorage to get fresh data (including template from Step 4)
+      try {
+        const projectsData = localStorage.getItem('octomatiz_projects');
+        console.log('Step 5: Raw localStorage data:', projectsData?.substring(0, 500));
+        
+        if (projectsData) {
+          const projects = JSON.parse(projectsData);
+          const project = projects.find((p: { id: string }) => p.id === projectId);
+          
+          if (project) {
+            console.log('Step 5: Found project in localStorage:', {
+              id: project.id,
+              template: project.template,
+              colorTheme: project.colorTheme,
+              businessName: project.businessName,
+              status: project.status,
+              currentStep: project.currentStep,
+            });
+            
+            // CRITICAL: Ensure template has a value
+            if (!project.template) {
+              console.warn('Step 5: Template is missing! Defaulting to simple');
+              project.template = 'simple';
+            }
+            
+            setFreshProject(project);
+          } else {
+            console.error('Step 5: Project not found in localStorage for id:', projectId);
+          }
+        }
+      } catch (e) {
+        console.error('Error reading from localStorage:', e);
+      }
+      
+      // Also load to context
+      if (!currentProject) {
+        loadProject(projectId);
+      }
     }
   }, []);
 
@@ -38,14 +79,26 @@ export function Step5Deploy() {
     setProgress(progressData.progress);
   }, []);
 
+  // Use freshProject for deployment (has latest template data from localStorage)
+  // freshProject is prioritized because it has the latest data saved directly to localStorage
+  const projectToUse = freshProject || currentProject;
+
   useEffect(() => {
-    if (!currentProject || deployStarted) return;
+    // Wait for freshProject to be loaded before starting deployment
+    if (!freshProject || deployStarted) return;
     setDeployStarted(true);
 
-    // Start deployment
-    deployProject(currentProject, handleProgress).then((result) => {
+    console.log('Step 5: Starting deployment with:', {
+      id: freshProject.id,
+      template: freshProject.template,
+      colorTheme: freshProject.colorTheme,
+      businessName: freshProject.businessName,
+    });
+
+    // Start deployment with fresh project data from localStorage
+    deployProject(freshProject, handleProgress).then((result) => {
       if (result.success && result.url && result.domain) {
-        updateProject(currentProject.id, {
+        updateProject(freshProject.id, {
           status: 'live',
           deployedUrl: result.url,
           domain: result.domain,
@@ -59,13 +112,13 @@ export function Step5Deploy() {
         setIsSuccess(true);
       }
     });
-  }, [currentProject?.id, deployStarted, handleProgress, updateProject]);
+  }, [freshProject, deployStarted, handleProgress, updateProject]);
 
   const getStageIndex = (s: DeploymentStage) => CHECKLIST.findIndex(c => c.id === s);
   const currentStageIndex = getStageIndex(stage);
 
-  const businessName = currentProject?.businessName || 'Website Anda';
-  const deployedUrl = currentProject?.deployedUrl || '';
+  const businessName = projectToUse?.businessName || 'Website Anda';
+  const deployedUrl = projectToUse?.deployedUrl || currentProject?.deployedUrl || '';
   
   // Extract display URL (remove https://)
   const displayUrl = deployedUrl.replace(/^https?:\/\//, '');
@@ -77,7 +130,7 @@ export function Step5Deploy() {
   };
 
   const handleShareWhatsApp = () => {
-    const waNumber = currentProject?.whatsapp || '';
+    const waNumber = projectToUse?.whatsapp || '';
     // Pass both URLs - short URL and original URL
     const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, deployedUrl, shortUrl || undefined);
     window.open(shareUrl, '_blank');
@@ -91,6 +144,27 @@ export function Step5Deploy() {
 
   const handlePreview = () => {
     setShowPreview(true);
+  };
+
+  // Delete current project from localStorage and start fresh (for testing)
+  const handleTestAgain = () => {
+    if (!projectToUse?.id) return;
+    
+    try {
+      const STORAGE_KEY = 'octomatiz_projects';
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const projects = JSON.parse(stored);
+        const filtered = projects.filter((p: { id: string }) => p.id !== projectToUse.id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+        console.log('Project deleted from localStorage:', projectToUse.id);
+      }
+    } catch (e) {
+      console.error('Failed to delete project:', e);
+    }
+    
+    // Redirect to Step 1 to create new project
+    window.location.href = '/create/step-1';
   };
 
   // Preview Modal
@@ -213,6 +287,14 @@ export function Step5Deploy() {
           <a href="/" className="text-center text-primary text-sm font-medium mt-2 hover:underline">
             Kembali ke Dashboard
           </a>
+          
+          {/* Dev/Test button - delete this project and start fresh */}
+          <button
+            onClick={handleTestAgain}
+            className="text-center text-red-400/60 text-xs font-medium mt-4 hover:text-red-400 transition-colors"
+          >
+            🧪 Test Lagi (Hapus project ini)
+          </button>
         </div>
       </div>
     );
