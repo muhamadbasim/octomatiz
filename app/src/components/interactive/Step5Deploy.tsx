@@ -23,6 +23,7 @@ export function Step5Deploy() {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [deployStarted, setDeployStarted] = useState(false);
+  const [shortUrl, setShortUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -52,6 +53,9 @@ export function Step5Deploy() {
         if (result.html) {
           setGeneratedHtml(result.html);
         }
+        if (result.shortUrl) {
+          setShortUrl(result.shortUrl);
+        }
         setIsSuccess(true);
       }
     });
@@ -62,13 +66,13 @@ export function Step5Deploy() {
 
   const businessName = currentProject?.businessName || 'Website Anda';
   const deployedUrl = currentProject?.deployedUrl || '';
-  const domain = currentProject?.domain || '';
   
   // Extract display URL (remove https://)
   const displayUrl = deployedUrl.replace(/^https?:\/\//, '');
+  const shortDisplayUrl = shortUrl?.replace(/^https?:\/\//, '') || '';
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(deployedUrl);
+  const handleCopyLink = (urlToCopy?: string) => {
+    navigator.clipboard.writeText(urlToCopy || deployedUrl);
     alert('Link berhasil disalin!');
   };
 
@@ -144,8 +148,29 @@ export function Step5Deploy() {
           </p>
         </div>
 
-        {/* Link Card */}
-        <div className="z-10 w-full mb-10">
+        {/* Link Cards */}
+        <div className="z-10 w-full mb-10 space-y-3">
+          {/* Short URL (if available) */}
+          {shortUrl && (
+            <div className="group relative flex items-center justify-between gap-3 p-1 pl-5 pr-1 rounded-2xl bg-primary/10 border border-primary/30 shadow-lg">
+              <button 
+                onClick={() => window.open(shortUrl, '_blank')}
+                className="flex items-center gap-2 overflow-hidden py-3 hover:opacity-80 transition-opacity"
+              >
+                <span className="material-symbols-outlined text-primary text-[18px]">link</span>
+                <p className="text-sm font-bold text-primary truncate">{shortDisplayUrl}</p>
+                <span className="material-symbols-outlined text-primary/60 text-[16px]">open_in_new</span>
+              </button>
+              <button
+                onClick={() => handleCopyLink(shortUrl)}
+                className="flex items-center justify-center size-10 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">content_copy</span>
+              </button>
+            </div>
+          )}
+          
+          {/* Original URL */}
           <div className="group relative flex items-center justify-between gap-3 p-1 pl-5 pr-1 rounded-2xl bg-surface-dark border border-white/10 shadow-lg hover:border-primary/50 transition-colors">
             <button 
               onClick={handleVisitSite}
@@ -156,13 +181,15 @@ export function Step5Deploy() {
               <span className="material-symbols-outlined text-gray-400 text-[16px]">open_in_new</span>
             </button>
             <button
-              onClick={handleCopyLink}
+              onClick={() => handleCopyLink()}
               className="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
             >
               <span className="material-symbols-outlined text-[20px]">content_copy</span>
             </button>
           </div>
-          <p className="text-center text-xs text-white/30 mt-3">Link aktif dan aman (SSL)</p>
+          <p className="text-center text-xs text-white/30 mt-3">
+            {shortUrl ? 'Link pendek untuk dibagikan' : 'Link aktif dan aman (SSL)'}
+          </p>
         </div>
 
         {/* Actions */}
