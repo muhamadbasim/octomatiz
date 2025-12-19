@@ -71,9 +71,15 @@ export function formatWhatsAppNumber(phoneNumber: string): string {
 export function generateWhatsAppShareUrl(
   phoneNumber: string,
   businessName: string,
-  deployedUrl: string
+  deployedUrl: string,
+  shortUrl?: string
 ): string {
-  const message = `Hai! Website ${businessName} sudah online di ${deployedUrl}`;
+  let message: string;
+  if (shortUrl) {
+    message = `Hai! Website ${businessName} sudah online di ${shortUrl} atau ${deployedUrl}`;
+  } else {
+    message = `Hai! Website ${businessName} sudah online di ${deployedUrl}`;
+  }
   const formattedNumber = formatWhatsAppNumber(phoneNumber);
   return `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
 }

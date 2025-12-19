@@ -76,9 +76,10 @@ export function Step5Deploy() {
     alert('Link berhasil disalin!');
   };
 
-  const handleShareWhatsApp = (urlToShare: string) => {
+  const handleShareWhatsApp = () => {
     const waNumber = currentProject?.whatsapp || '';
-    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, urlToShare);
+    // Pass both URLs - short URL and original URL
+    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, deployedUrl, shortUrl || undefined);
     window.open(shareUrl, '_blank');
   };
   
@@ -160,24 +161,13 @@ export function Step5Deploy() {
                 <span className="material-symbols-outlined text-primary text-[18px] flex-shrink-0">link</span>
                 <p className="text-sm font-bold text-primary truncate">{shortDisplayUrl}</p>
               </button>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <button
-                  onClick={() => handleShareWhatsApp(shortUrl)}
-                  className="flex items-center justify-center size-10 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                  title="Share via WhatsApp"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382C17.112 14.202 15.344 13.332 15.013 13.217C14.682 13.101 14.441 13.044 14.2 13.404C13.96 13.764 13.272 14.57 13.061 14.811C12.851 15.051 12.64 15.082 12.28 14.902C11.92 14.721 10.758 14.341 9.38 13.114C8.283 12.137 7.543 10.931 7.332 10.57C7.122 10.21 7.31 10.016 7.49 9.837C7.653 9.674 7.853 9.412 8.033 9.202C8.213 8.992 8.273 8.841 8.393 8.601C8.514 8.361 8.453 8.15 8.363 7.97C8.273 7.79 7.552 6.017 7.252 5.312C6.96 4.631 6.662 4.722 6.442 4.712C6.241 4.703 6.011 4.703 5.781 4.703C5.551 4.703 5.18 4.793 4.87 5.133C4.559 5.473 3.688 6.291 3.688 7.954C3.688 9.617 4.899 11.224 5.07 11.454C5.24 11.685 7.456 15.105 10.846 16.568C11.652 16.916 12.281 17.124 12.774 17.28C13.593 17.54 14.335 17.502 14.922 17.414C15.578 17.316 16.942 16.588 17.222 15.797C17.503 15.006 17.503 14.325 17.412 14.175C17.322 14.025 17.081 13.935 16.721 13.755H17.472V14.382Z"></path>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleCopyLink(shortUrl)}
-                  className="flex items-center justify-center size-10 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                  title="Copy link"
-                >
-                  <span className="material-symbols-outlined text-[20px]">content_copy</span>
-                </button>
-              </div>
+              <button
+                onClick={() => handleCopyLink(shortUrl)}
+                className="flex items-center justify-center size-10 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                title="Copy link"
+              >
+                <span className="material-symbols-outlined text-[20px]">content_copy</span>
+              </button>
             </div>
           )}
           
@@ -190,32 +180,28 @@ export function Step5Deploy() {
               <span className="material-symbols-outlined text-green-500 text-[18px] flex-shrink-0">lock</span>
               <p className="text-sm font-medium text-white truncate">{displayUrl}</p>
             </button>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={() => handleShareWhatsApp(deployedUrl)}
-                className="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
-                title="Share via WhatsApp"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382C17.112 14.202 15.344 13.332 15.013 13.217C14.682 13.101 14.441 13.044 14.2 13.404C13.96 13.764 13.272 14.57 13.061 14.811C12.851 15.051 12.64 15.082 12.28 14.902C11.92 14.721 10.758 14.341 9.38 13.114C8.283 12.137 7.543 10.931 7.332 10.57C7.122 10.21 7.31 10.016 7.49 9.837C7.653 9.674 7.853 9.412 8.033 9.202C8.213 8.992 8.273 8.841 8.393 8.601C8.514 8.361 8.453 8.15 8.363 7.97C8.273 7.79 7.552 6.017 7.252 5.312C6.96 4.631 6.662 4.722 6.442 4.712C6.241 4.703 6.011 4.703 5.781 4.703C5.551 4.703 5.18 4.793 4.87 5.133C4.559 5.473 3.688 6.291 3.688 7.954C3.688 9.617 4.899 11.224 5.07 11.454C5.24 11.685 7.456 15.105 10.846 16.568C11.652 16.916 12.281 17.124 12.774 17.28C13.593 17.54 14.335 17.502 14.922 17.414C15.578 17.316 16.942 16.588 17.222 15.797C17.503 15.006 17.503 14.325 17.412 14.175C17.322 14.025 17.081 13.935 16.721 13.755H17.472V14.382Z"></path>
-                </svg>
-              </button>
-              <button
-                onClick={() => handleCopyLink()}
-                className="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
-                title="Copy link"
-              >
-                <span className="material-symbols-outlined text-[20px]">content_copy</span>
-              </button>
-            </div>
+            <button
+              onClick={() => handleCopyLink()}
+              className="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
+              title="Copy link"
+            >
+              <span className="material-symbols-outlined text-[20px]">content_copy</span>
+            </button>
           </div>
           <p className="text-center text-xs text-white/30 mt-3">
-            {shortUrl ? 'Klik ikon WhatsApp untuk share link pilihan Anda' : 'Link aktif dan aman (SSL)'}
+            {shortUrl ? 'Link pendek untuk dibagikan • Link asli dengan SSL' : 'Link aktif dan aman (SSL)'}
           </p>
         </div>
 
         {/* Actions */}
         <div className="z-10 w-full mt-auto flex flex-col gap-3">
+          <button onClick={handleShareWhatsApp} className="btn-primary w-full">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382C17.112 14.202 15.344 13.332 15.013 13.217C14.682 13.101 14.441 13.044 14.2 13.404C13.96 13.764 13.272 14.57 13.061 14.811C12.851 15.051 12.64 15.082 12.28 14.902C11.92 14.721 10.758 14.341 9.38 13.114C8.283 12.137 7.543 10.931 7.332 10.57C7.122 10.21 7.31 10.016 7.49 9.837C7.653 9.674 7.853 9.412 8.033 9.202C8.213 8.992 8.273 8.841 8.393 8.601C8.514 8.361 8.453 8.15 8.363 7.97C8.273 7.79 7.552 6.017 7.252 5.312C6.96 4.631 6.662 4.722 6.442 4.712C6.241 4.703 6.011 4.703 5.781 4.703C5.551 4.703 5.18 4.793 4.87 5.133C4.559 5.473 3.688 6.291 3.688 7.954C3.688 9.617 4.899 11.224 5.07 11.454C5.24 11.685 7.456 15.105 10.846 16.568C11.652 16.916 12.281 17.124 12.774 17.28C13.593 17.54 14.335 17.502 14.922 17.414C15.578 17.316 16.942 16.588 17.222 15.797C17.503 15.006 17.503 14.325 17.412 14.175C17.322 14.025 17.081 13.935 16.721 13.755H17.472V14.382Z"></path>
+            </svg>
+            <span>Share ke WhatsApp</span>
+          </button>
+
           <button
             onClick={handlePreview}
             className="w-full rounded-full border border-white/20 bg-transparent p-4 hover:bg-white/5 transition-all active:scale-[0.98] text-center flex items-center justify-center gap-2"
