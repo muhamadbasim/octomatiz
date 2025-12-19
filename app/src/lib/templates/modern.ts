@@ -1,4 +1,5 @@
 import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
+import { CATEGORY_CONTENT } from './types';
 
 /**
  * Modern Professional Template
@@ -21,7 +22,8 @@ export const renderModernTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
-  const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya ingin konsultasi.`)}`;
+  const categoryContent = CATEGORY_CONTENT[data.category] || CATEGORY_CONTENT.kuliner;
+  const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, ${categoryContent.ctaMessage}`)}`;
   
   return `<!DOCTYPE html>
 <html lang="id">
@@ -242,8 +244,8 @@ export const renderModernTemplate: TemplateRenderer = (
       <div class="hero-overlay">
         <div class="hero-content">
           <span class="hero-badge animate-scale-in delay-2">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            ${data.category}
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">${categoryContent.badgeIcon}</svg>
+            ${data.category.charAt(0).toUpperCase() + data.category.slice(1)}
           </span>
           <h1 class="animate-fade-in-up delay-3">${data.businessName}</h1>
           ${data.location ? `
@@ -264,22 +266,11 @@ export const renderModernTemplate: TemplateRenderer = (
     
     <!-- Features -->
     <div class="features">
-      <div class="feature animate-scale-in delay-1">
-        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        <span>Terpercaya</span>
-      </div>
-      <div class="feature animate-scale-in delay-2">
-        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-        <span>Respon Cepat</span>
-      </div>
-      <div class="feature animate-scale-in delay-3">
-        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-        <span>Aman</span>
-      </div>
-      <div class="feature animate-scale-in delay-4">
-        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        <span>Harga Terbaik</span>
-      </div>
+      ${categoryContent.features.map((feature, index) => `
+      <div class="feature animate-scale-in delay-${index + 1}">
+        <svg viewBox="0 0 24 24">${feature.icon}</svg>
+        <span>${feature.label}</span>
+      </div>`).join('')}
     </div>
     
     <div class="footer-space"></div>
@@ -289,7 +280,7 @@ export const renderModernTemplate: TemplateRenderer = (
   <div class="cta-container animate-fade-in-up delay-5">
     <a href="${whatsappLink}" class="cta-btn animate-pulse" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
-      <span>Konsultasi Gratis</span>
+      <span>${categoryContent.ctaText}</span>
     </a>
   </div>
 </body>
