@@ -46,6 +46,46 @@ export const renderWarmTemplate: TemplateRenderer = (
     }
     .container { max-width: 480px; margin: 0 auto; }
     
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-3deg); }
+      75% { transform: rotate(3deg); }
+    }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+    .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+    .animate-scale-in { animation: scaleIn 0.5s ease-out forwards; }
+    .animate-bounce-in { animation: bounceIn 0.6s ease-out forwards; }
+    .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+    .animate-wiggle { animation: wiggle 0.5s ease-in-out; }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .delay-5 { animation-delay: 0.5s; opacity: 0; }
+    
     /* Header */
     .header {
       text-align: center;
@@ -172,6 +212,7 @@ export const renderWarmTemplate: TemplateRenderer = (
       height: 1.25rem;
       fill: currentColor;
     }
+    .cta-btn:active { transform: scale(0.98); }
     
     .footer-space { height: 5rem; }
   </style>
@@ -179,28 +220,28 @@ export const renderWarmTemplate: TemplateRenderer = (
 <body>
   <div class="container">
     <!-- Header -->
-    <header class="header">
+    <header class="header animate-fade-in">
       <div class="logo">${data.businessName}</div>
     </header>
     
     <!-- Hero -->
-    <section class="hero">
+    <section class="hero animate-bounce-in delay-1">
       <img src="${data.productImage}" alt="${data.businessName}" loading="eager">
-      <span class="hero-badge">${data.category}</span>
+      <span class="hero-badge animate-scale-in delay-3">${data.category}</span>
     </section>
     
     <!-- Content -->
     <section class="content">
-      <h1 class="headline">${data.headline}</h1>
-      <div class="divider"></div>
-      <p class="story">${data.storytelling}</p>
+      <h1 class="headline animate-fade-in-up delay-2">${data.headline}</h1>
+      <div class="divider animate-scale-in delay-3"></div>
+      <p class="story animate-fade-in-up delay-3">${data.storytelling}</p>
       
       <div class="info-cards">
-        <div class="info-card">
+        <div class="info-card animate-scale-in delay-4">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           <span>${data.location || 'Indonesia'}</span>
         </div>
-        <div class="info-card">
+        <div class="info-card animate-scale-in delay-5">
           <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
           <span>WhatsApp</span>
         </div>
@@ -211,8 +252,8 @@ export const renderWarmTemplate: TemplateRenderer = (
   </div>
   
   <!-- WhatsApp CTA -->
-  <div class="cta-container">
-    <a href="${whatsappLink}" class="cta-btn" target="_blank" rel="noopener">
+  <div class="cta-container animate-fade-in-up delay-5">
+    <a href="${whatsappLink}" class="cta-btn animate-pulse" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
       <span>Pesan Sekarang</span>
     </a>
