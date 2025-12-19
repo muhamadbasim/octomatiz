@@ -79,6 +79,14 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
+    // Log received project data for debugging
+    console.log('Deploy API received project:', {
+      id: project.id,
+      businessName: project.businessName,
+      template: project.template,
+      colorTheme: project.colorTheme,
+    });
+
     // Generate landing page HTML
     const { html } = generateLandingPage(project);
     

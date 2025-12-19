@@ -65,18 +65,25 @@ export function Step5Deploy() {
   }, []);
 
   // Use freshProject for deployment (has latest template data from localStorage)
+  // freshProject is prioritized because it has the latest data saved directly to localStorage
   const projectToUse = freshProject || currentProject;
 
   useEffect(() => {
-    if (!projectToUse || deployStarted) return;
+    // Wait for freshProject to be loaded before starting deployment
+    if (!freshProject || deployStarted) return;
     setDeployStarted(true);
 
-    console.log('Step 5: Starting deployment with template:', projectToUse.template);
+    console.log('Step 5: Starting deployment with:', {
+      id: freshProject.id,
+      template: freshProject.template,
+      colorTheme: freshProject.colorTheme,
+      businessName: freshProject.businessName,
+    });
 
-    // Start deployment with fresh project data
-    deployProject(projectToUse, handleProgress).then((result) => {
+    // Start deployment with fresh project data from localStorage
+    deployProject(freshProject, handleProgress).then((result) => {
       if (result.success && result.url && result.domain) {
-        updateProject(projectToUse.id, {
+        updateProject(freshProject.id, {
           status: 'live',
           deployedUrl: result.url,
           domain: result.domain,
@@ -90,7 +97,7 @@ export function Step5Deploy() {
         setIsSuccess(true);
       }
     });
-  }, [projectToUse?.id, deployStarted, handleProgress, updateProject]);
+  }, [freshProject, deployStarted, handleProgress, updateProject]);
 
   const getStageIndex = (s: DeploymentStage) => CHECKLIST.findIndex(c => c.id === s);
   const currentStageIndex = getStageIndex(stage);
