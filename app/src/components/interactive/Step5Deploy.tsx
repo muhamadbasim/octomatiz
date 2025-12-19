@@ -78,7 +78,9 @@ export function Step5Deploy() {
 
   const handleShareWhatsApp = () => {
     const waNumber = currentProject?.whatsapp || '';
-    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, deployedUrl);
+    // Use short URL if available, otherwise use original URL
+    const urlToShare = shortUrl || deployedUrl;
+    const shareUrl = generateWhatsAppShareUrl(waNumber, businessName, urlToShare);
     window.open(shareUrl, '_blank');
   };
   
