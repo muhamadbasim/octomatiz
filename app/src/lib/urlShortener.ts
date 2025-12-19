@@ -1,5 +1,5 @@
 /**
- * URL Shortener Service using is.gd API
+ * URL Shortener Service using CleanURI API
  * Free, no API key required, no ads, direct redirect
  */
 
@@ -9,32 +9,41 @@ export interface ShortUrlResult {
   error?: string;
 }
 
+interface CleanURIResponse {
+  result_url?: string;
+  error?: string;
+}
+
 /**
- * Shorten URL using is.gd API
+ * Shorten URL using CleanURI API
  * @param longUrl - The original long URL to shorten
  * @returns Promise with short URL result
  */
 export async function shortenUrl(longUrl: string): Promise<ShortUrlResult> {
   try {
-    // is.gd API endpoint (free, no auth required, no ads)
-    const apiUrl = `https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`;
-
-    const response = await fetch(apiUrl);
+    // CleanURI API endpoint (free, no auth required, no ads)
+    const response = await fetch('https://cleanuri.com/api/v1/shorten', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `url=${encodeURIComponent(longUrl)}`,
+    });
 
     if (!response.ok) {
-      throw new Error(`is.gd API error: ${response.status}`);
+      throw new Error(`CleanURI API error: ${response.status}`);
     }
 
-    const shortUrl = await response.text();
+    const data: CleanURIResponse = await response.json();
 
-    // Validate response is a valid URL
-    if (!shortUrl.startsWith('https://is.gd/')) {
-      throw new Error('Invalid response from is.gd');
+    // Validate response
+    if (!data.result_url) {
+      throw new Error(data.error || 'Invalid response from CleanURI');
     }
 
     return {
       success: true,
-      shortUrl: shortUrl.trim(),
+      shortUrl: data.result_url,
     };
   } catch (error) {
     console.error('URL shortening failed:', error);
