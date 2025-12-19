@@ -38,7 +38,16 @@ export function Step4Design() {
   }, [currentProject?.id]);
 
   const handlePublish = () => {
-    if (!currentProject) return;
+    if (!currentProject) {
+      console.error('Step 4: currentProject is null!');
+      return;
+    }
+    
+    console.log('Step 4: handlePublish called with:', {
+      projectId: currentProject.id,
+      selectedTemplate: template,
+      selectedColorTheme: colorTheme,
+    });
     
     // Save directly to localStorage BEFORE navigation (bypass React state race condition)
     const STORAGE_KEY = 'octomatiz_projects';
@@ -47,8 +56,10 @@ export function Step4Design() {
       const projects = stored ? JSON.parse(stored) : [];
       const index = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
       
+      console.log('Step 4: Found project at index:', index);
+      
       if (index >= 0) {
-        projects[index] = {
+        const updatedProject = {
           ...projects[index],
           template,
           colorTheme,
@@ -56,8 +67,21 @@ export function Step4Design() {
           currentStep: 5,
           updatedAt: new Date().toISOString(),
         };
+        projects[index] = updatedProject;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-        console.log('Step 4: Saved template directly to localStorage:', { template, colorTheme });
+        
+        console.log('Step 4: Saved to localStorage:', {
+          template: updatedProject.template,
+          colorTheme: updatedProject.colorTheme,
+        });
+        
+        // Verify save
+        const verify = localStorage.getItem(STORAGE_KEY);
+        const verifyProjects = JSON.parse(verify || '[]');
+        const verifyProject = verifyProjects.find((p: { id: string }) => p.id === currentProject.id);
+        console.log('Step 4: Verification - template in localStorage:', verifyProject?.template);
+      } else {
+        console.error('Step 4: Project not found in localStorage!');
       }
     } catch (error) {
       console.error('Failed to save to localStorage:', error);

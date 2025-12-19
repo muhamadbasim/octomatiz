@@ -36,16 +36,31 @@ export function Step5Deploy() {
       // Read directly from localStorage to get fresh data (including template from Step 4)
       try {
         const projectsData = localStorage.getItem('octomatiz_projects');
+        console.log('Step 5: Raw localStorage data:', projectsData?.substring(0, 500));
+        
         if (projectsData) {
           const projects = JSON.parse(projectsData);
           const project = projects.find((p: { id: string }) => p.id === projectId);
+          
           if (project) {
-            console.log('Step 5: Fresh project data from localStorage:', {
+            console.log('Step 5: Found project in localStorage:', {
+              id: project.id,
               template: project.template,
               colorTheme: project.colorTheme,
-              businessName: project.businessName
+              businessName: project.businessName,
+              status: project.status,
+              currentStep: project.currentStep,
             });
+            
+            // CRITICAL: Ensure template has a value
+            if (!project.template) {
+              console.warn('Step 5: Template is missing! Defaulting to simple');
+              project.template = 'simple';
+            }
+            
             setFreshProject(project);
+          } else {
+            console.error('Step 5: Project not found in localStorage for id:', projectId);
           }
         }
       } catch (e) {
