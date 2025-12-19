@@ -24,10 +24,11 @@ export const renderWarmTemplate: TemplateRenderer = (
   const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya mau pesan!`)}`;
   
   return `<!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-template="warm">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="template" content="warm">
   <title>${data.businessName} - ${data.headline}</title>
   <meta name="description" content="${data.storytelling.substring(0, 160)}">
   <meta property="og:title" content="${data.businessName}">
