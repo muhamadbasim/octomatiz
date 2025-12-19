@@ -131,6 +131,27 @@ export function Step5Deploy() {
     setShowPreview(true);
   };
 
+  // Delete current project from localStorage and start fresh (for testing)
+  const handleTestAgain = () => {
+    if (!projectToUse?.id) return;
+    
+    try {
+      const STORAGE_KEY = 'octomatiz_projects';
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const projects = JSON.parse(stored);
+        const filtered = projects.filter((p: { id: string }) => p.id !== projectToUse.id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+        console.log('Project deleted from localStorage:', projectToUse.id);
+      }
+    } catch (e) {
+      console.error('Failed to delete project:', e);
+    }
+    
+    // Redirect to Step 1 to create new project
+    window.location.href = '/create/step-1';
+  };
+
   // Preview Modal
   if (showPreview && generatedHtml) {
     return (
@@ -251,6 +272,14 @@ export function Step5Deploy() {
           <a href="/" className="text-center text-primary text-sm font-medium mt-2 hover:underline">
             Kembali ke Dashboard
           </a>
+          
+          {/* Dev/Test button - delete this project and start fresh */}
+          <button
+            onClick={handleTestAgain}
+            className="text-center text-red-400/60 text-xs font-medium mt-4 hover:text-red-400 transition-colors"
+          >
+            🧪 Test Lagi (Hapus project ini)
+          </button>
         </div>
       </div>
     );
