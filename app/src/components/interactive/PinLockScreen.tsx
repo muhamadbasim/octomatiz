@@ -5,6 +5,7 @@ import {
   recordFailedAttempt,
   resetAttempts,
 } from '../../lib/pinSecurity';
+import { InstallPrompt } from './InstallPrompt';
 
 interface PinLockScreenProps {
   onUnlock: () => void;
@@ -180,6 +181,9 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
       >
         Buka
       </button>
+
+      {/* Install Prompt */}
+      <InstallPrompt />
     </div>
   );
 }
