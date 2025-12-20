@@ -144,14 +144,43 @@ export function addSecurityHeaders(response: Response): Response {
 
 /**
  * Sanitize string input to prevent XSS
+ * Use for text content that will be displayed in HTML
  */
 export function sanitizeInput(input: string): string {
+  if (!input || typeof input !== 'string') return '';
   return input
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
+}
+
+/**
+ * Sanitize for HTML attribute values
+ * More strict - also escapes newlines and special chars
+ */
+export function sanitizeAttribute(input: string): string {
+  if (!input || typeof input !== 'string') return '';
+  return sanitizeInput(input)
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '')
+    .replace(/\t/g, ' ');
+}
+
+/**
+ * Sanitize URL to prevent javascript: and data: injection
+ */
+export function sanitizeUrl(url: string): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim().toLowerCase();
+  // Block dangerous protocols
+  if (trimmed.startsWith('javascript:') || 
+      trimmed.startsWith('data:') || 
+      trimmed.startsWith('vbscript:')) {
+    return '';
+  }
+  return url;
 }
 
 /**

@@ -1,22 +1,31 @@
 /**
  * Admin Stats API - Simple D1 stats endpoint
  * Returns real project counts from D1 database
+ * REQUIRES: Authorization header with ADMIN_SECRET
  */
 
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
 import { getMetrics } from '../../../lib/db/events';
-import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ locals, request }) => {
+export const GET: APIRoute = async (context) => {
+  const { locals, request } = context;
+  
   // Rate limiting
   const clientIP = getClientIP(request);
   const rateLimit = checkRateLimit(`stats:${clientIP}`, 30, 60000); // 30 requests per minute
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit.resetIn);
+  }
+
+  // Admin authentication required
+  if (!verifyAdminAuth(context, request)) {
+    console.warn(`Unauthorized stats access attempt from IP: ${clientIP}`);
+    return unauthorizedResponse();
   }
 
   try {

@@ -2,6 +2,7 @@
  * Admin Metrics API Endpoint
  * Returns dashboard metrics data based on segment filter
  * Uses D1 database for real project data by default
+ * REQUIRES: Authorization header with ADMIN_SECRET
  */
 
 import type { APIRoute } from 'astro';
@@ -10,8 +11,24 @@ import { getMockDashboardMetrics } from '../../../lib/admin/mockData';
 import { getDB } from '../../../lib/db/client';
 import { getMetrics } from '../../../lib/db/events';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
+import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async (context) => {
+  const { request, locals } = context;
+  
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`metrics:${clientIP}`, 30, 60000);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+
+  // Admin authentication required
+  if (!verifyAdminAuth(context, request)) {
+    console.warn(`Unauthorized metrics access attempt from IP: ${clientIP}`);
+    return unauthorizedResponse();
+  }
+  
   try {
     const url = new URL(request.url);
     const segment = (url.searchParams.get('segment') || 'all') as SegmentType;

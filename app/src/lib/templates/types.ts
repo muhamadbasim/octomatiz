@@ -1,5 +1,35 @@
 import type { BusinessCategory, TemplateStyle, ColorTheme } from '../../types/project';
 
+// HTML sanitization utilities for XSS prevention
+export function escapeHtml(input: string): string {
+  if (!input || typeof input !== 'string') return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+export function escapeAttribute(input: string): string {
+  if (!input || typeof input !== 'string') return '';
+  return escapeHtml(input)
+    .replace(/\n/g, ' ')
+    .replace(/\r/g, '')
+    .replace(/\t/g, ' ');
+}
+
+export function sanitizeUrl(url: string): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim().toLowerCase();
+  if (trimmed.startsWith('javascript:') || 
+      trimmed.startsWith('data:text') || 
+      trimmed.startsWith('vbscript:')) {
+    return '';
+  }
+  return url;
+}
+
 // Color theme configuration
 export interface ThemeColors {
   primary: string;

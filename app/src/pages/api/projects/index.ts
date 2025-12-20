@@ -4,10 +4,18 @@ import { getDB } from '../../../lib/db/client';
 import { listProjects, createProject, type CreateProjectInput } from '../../../lib/db/projects';
 import { deviceExists } from '../../../lib/db/devices';
 import { logEvent } from '../../../lib/db/events';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 import type { ApiResponse, DBProject, ProjectsListResponse } from '../../../types/database';
 
 // GET /api/projects - List projects for a device
 export const GET: APIRoute = async ({ request, locals }) => {
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`projects-list:${clientIP}`, 60, 60000); // 60 requests per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const url = new URL(request.url);
@@ -66,6 +74,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 // POST /api/projects - Create new project
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Rate limiting - stricter for create operations
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`projects-create:${clientIP}`, 20, 60000); // 20 creates per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const body = await request.json();

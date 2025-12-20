@@ -12,11 +12,12 @@
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { getSlugAnalytics, getAllAnalytics, type AnalyticsSummary } from '../../../lib/analytics';
-import { checkRateLimit, rateLimitResponse, getClientIP, isValidSlug } from '../../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP, isValidSlug, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ locals, url, request }) => {
+export const GET: APIRoute = async (context) => {
+  const { locals, url, request } = context;
   const startTime = Date.now();
   
   // Rate limiting
@@ -24,6 +25,12 @@ export const GET: APIRoute = async ({ locals, url, request }) => {
   const rateLimit = checkRateLimit(`analytics:${clientIP}`, 30, 60000); // 30 requests per minute
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit.resetIn);
+  }
+  
+  // Admin authentication required
+  if (!verifyAdminAuth(context, request)) {
+    console.warn(`Unauthorized analytics access attempt from IP: ${clientIP}`);
+    return unauthorizedResponse();
   }
   
   try {

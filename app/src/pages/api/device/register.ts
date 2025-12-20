@@ -1,10 +1,18 @@
 // Device registration API endpoint
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
-import { registerDevice, getDevice, updateLastSeen, deviceExists } from '../../../lib/db/devices';
+import { registerDevice, getDevice, updateLastSeen } from '../../../lib/db/devices';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 import type { ApiResponse, DBDevice } from '../../../types/database';
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Rate limiting - prevent device registration abuse
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`device-register:${clientIP}`, 10, 60000); // 10 per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     // Debug: Check if runtime is available
     const runtime = (locals as any).runtime;

@@ -1,4 +1,5 @@
 import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
+import { escapeHtml, escapeAttribute, sanitizeUrl } from './types';
 
 /**
  * Warm Culinary Template
@@ -21,6 +22,14 @@ export const renderWarmTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
+  // Sanitize all user inputs
+  const businessName = escapeHtml(data.businessName);
+  const headline = escapeHtml(data.headline);
+  const storytelling = escapeHtml(data.storytelling);
+  const category = escapeHtml(data.category);
+  const location = escapeHtml(data.location || 'Indonesia');
+  const productImage = sanitizeUrl(data.productImage);
+  
   const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya mau pesan!`)}`;
   
   return `<!DOCTYPE html>
@@ -29,11 +38,11 @@ export const renderWarmTemplate: TemplateRenderer = (
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="template" content="warm">
-  <title>${data.businessName} - ${data.headline}</title>
-  <meta name="description" content="${data.storytelling.substring(0, 160)}">
-  <meta property="og:title" content="${data.businessName}">
-  <meta property="og:description" content="${data.headline}">
-  <meta property="og:image" content="${data.productImage}">
+  <title>${businessName} - ${headline}</title>
+  <meta name="description" content="${escapeAttribute(data.storytelling.substring(0, 160))}">
+  <meta property="og:title" content="${escapeAttribute(data.businessName)}">
+  <meta property="og:description" content="${escapeAttribute(data.headline)}">
+  <meta property="og:image" content="${escapeAttribute(data.productImage)}">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -222,25 +231,25 @@ export const renderWarmTemplate: TemplateRenderer = (
   <div class="container">
     <!-- Header -->
     <header class="header animate-fade-in">
-      <div class="logo">${data.businessName}</div>
+      <div class="logo">${businessName}</div>
     </header>
     
     <!-- Hero -->
     <section class="hero animate-bounce-in delay-1">
-      <img src="${data.productImage}" alt="${data.businessName}" loading="eager">
-      <span class="hero-badge animate-scale-in delay-3">${data.category}</span>
+      <img src="${productImage}" alt="${businessName}" loading="eager">
+      <span class="hero-badge animate-scale-in delay-3">${category}</span>
     </section>
     
     <!-- Content -->
     <section class="content">
-      <h1 class="headline animate-fade-in-up delay-2">${data.headline}</h1>
+      <h1 class="headline animate-fade-in-up delay-2">${headline}</h1>
       <div class="divider animate-scale-in delay-3"></div>
-      <p class="story animate-fade-in-up delay-3">${data.storytelling}</p>
+      <p class="story animate-fade-in-up delay-3">${storytelling}</p>
       
       <div class="info-cards">
         <div class="info-card animate-scale-in delay-4">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-          <span>${data.location || 'Indonesia'}</span>
+          <span>${location}</span>
         </div>
         <div class="info-card animate-scale-in delay-5">
           <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>

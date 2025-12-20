@@ -3,10 +3,18 @@ import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { getProject, updateProject, deleteProject, type UpdateProjectInput } from '../../../lib/db/projects';
 import { logEvent } from '../../../lib/db/events';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 import type { ApiResponse, DBProject } from '../../../types/database';
 
 // GET /api/projects/[id] - Get single project
-export const GET: APIRoute = async ({ params, locals }) => {
+export const GET: APIRoute = async ({ params, locals, request }) => {
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`project-get:${clientIP}`, 60, 60000);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const { id } = params;
@@ -59,6 +67,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
 // PUT /api/projects/[id] - Update project
 export const PUT: APIRoute = async ({ params, request, locals }) => {
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`project-update:${clientIP}`, 30, 60000);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const { id } = params;
@@ -170,6 +185,13 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
 // DELETE /api/projects/[id] - Delete project
 export const DELETE: APIRoute = async ({ params, request, locals }) => {
+  // Rate limiting - stricter for delete operations
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`project-delete:${clientIP}`, 10, 60000);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const { id } = params;

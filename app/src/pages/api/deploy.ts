@@ -3,7 +3,7 @@ import type { Project } from '../../types/project';
 import { generateLandingPage } from '../../lib/landingPageGenerator';
 import { shortenUrl } from '../../lib/urlShortener';
 import { isKVAvailable, safeKVPut } from '../../lib/kvErrorHandler';
-import { checkRateLimit, rateLimitResponse, getClientIP, sanitizeInput } from '../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../lib/security';
 
 export const prerender = false;
 

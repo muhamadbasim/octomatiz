@@ -1,4 +1,5 @@
 import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
+import { escapeHtml, escapeAttribute, sanitizeUrl } from './types';
 
 /**
  * Modern Professional Template
@@ -21,6 +22,14 @@ export const renderModernTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
+  // Sanitize all user inputs
+  const businessName = escapeHtml(data.businessName);
+  const headline = escapeHtml(data.headline);
+  const storytelling = escapeHtml(data.storytelling);
+  const category = escapeHtml(data.category);
+  const location = escapeHtml(data.location || '');
+  const productImage = sanitizeUrl(data.productImage);
+  
   const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya ingin konsultasi.`)}`;
   
   return `<!DOCTYPE html>
@@ -29,11 +38,11 @@ export const renderModernTemplate: TemplateRenderer = (
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="template" content="modern">
-  <title>${data.businessName} - ${data.headline}</title>
-  <meta name="description" content="${data.storytelling.substring(0, 160)}">
-  <meta property="og:title" content="${data.businessName}">
-  <meta property="og:description" content="${data.headline}">
-  <meta property="og:image" content="${data.productImage}">
+  <title>${businessName} - ${headline}</title>
+  <meta name="description" content="${escapeAttribute(data.storytelling.substring(0, 160))}">
+  <meta property="og:title" content="${escapeAttribute(data.businessName)}">
+  <meta property="og:description" content="${escapeAttribute(data.headline)}">
+  <meta property="og:image" content="${escapeAttribute(data.productImage)}">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -239,18 +248,18 @@ export const renderModernTemplate: TemplateRenderer = (
   <div class="container">
     <!-- Hero -->
     <section class="hero animate-fade-in">
-      <img src="${data.productImage}" alt="${data.businessName}" loading="eager" class="animate-float">
+      <img src="${productImage}" alt="${businessName}" loading="eager" class="animate-float">
       <div class="hero-overlay">
         <div class="hero-content">
           <span class="hero-badge animate-scale-in delay-2">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            ${data.category}
+            ${category}
           </span>
-          <h1 class="animate-fade-in-up delay-3">${data.businessName}</h1>
-          ${data.location ? `
+          <h1 class="animate-fade-in-up delay-3">${businessName}</h1>
+          ${location ? `
           <div class="hero-location animate-fade-in-up delay-4">
             <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            <span>${data.location}</span>
+            <span>${location}</span>
           </div>
           ` : ''}
         </div>
@@ -259,8 +268,8 @@ export const renderModernTemplate: TemplateRenderer = (
     
     <!-- Content Card -->
     <div class="content-card animate-fade-in-up delay-3">
-      <h2 class="headline">${data.headline}</h2>
-      <p class="story">${data.storytelling}</p>
+      <h2 class="headline">${headline}</h2>
+      <p class="story">${storytelling}</p>
     </div>
     
     <!-- Features -->

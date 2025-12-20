@@ -1,4 +1,5 @@
 import type { LandingPageData, ThemeColors, TemplateRenderer } from './types';
+import { escapeHtml, escapeAttribute, sanitizeUrl } from './types';
 
 /**
  * Simple Clean Template
@@ -21,6 +22,14 @@ export const renderSimpleTemplate: TemplateRenderer = (
   data: LandingPageData,
   colors: ThemeColors
 ): string => {
+  // Sanitize all user inputs
+  const businessName = escapeHtml(data.businessName);
+  const headline = escapeHtml(data.headline);
+  const storytelling = escapeHtml(data.storytelling);
+  const category = escapeHtml(data.category);
+  const location = escapeHtml(data.location || '');
+  const productImage = sanitizeUrl(data.productImage);
+  
   const whatsappLink = `https://wa.me/${formatWhatsAppNumber(data.whatsapp)}?text=${encodeURIComponent(`Halo ${data.businessName}, saya tertarik dengan produk Anda!`)}`;
   
   return `<!DOCTYPE html>
@@ -29,11 +38,11 @@ export const renderSimpleTemplate: TemplateRenderer = (
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="template" content="simple">
-  <title>${data.businessName} - ${data.headline}</title>
-  <meta name="description" content="${data.storytelling.substring(0, 160)}">
-  <meta property="og:title" content="${data.businessName}">
-  <meta property="og:description" content="${data.headline}">
-  <meta property="og:image" content="${data.productImage}">
+  <title>${businessName} - ${headline}</title>
+  <meta name="description" content="${escapeAttribute(data.storytelling.substring(0, 160))}">
+  <meta property="og:title" content="${escapeAttribute(data.businessName)}">
+  <meta property="og:description" content="${escapeAttribute(data.headline)}">
+  <meta property="og:image" content="${escapeAttribute(data.productImage)}">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -194,22 +203,22 @@ export const renderSimpleTemplate: TemplateRenderer = (
   <div class="container">
     <!-- Hero Section -->
     <section class="hero animate-fade-in">
-      <img src="${data.productImage}" alt="${data.businessName}" loading="eager">
+      <img src="${productImage}" alt="${businessName}" loading="eager">
       <div class="hero-overlay">
-        <span class="badge animate-scale-in delay-2">${data.category}</span>
-        <h1 class="animate-fade-in-up delay-3">${data.businessName}</h1>
+        <span class="badge animate-scale-in delay-2">${category}</span>
+        <h1 class="animate-fade-in-up delay-3">${businessName}</h1>
       </div>
     </section>
     
     <!-- Content Section -->
     <section class="content">
-      <h2 class="headline animate-fade-in-up delay-2">${data.headline}</h2>
-      <p class="story animate-fade-in-up delay-3">${data.storytelling}</p>
+      <h2 class="headline animate-fade-in-up delay-2">${headline}</h2>
+      <p class="story animate-fade-in-up delay-3">${storytelling}</p>
       
-      ${data.location ? `
+      ${location ? `
       <div class="location animate-fade-in-up delay-4">
         <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        <span>${data.location}</span>
+        <span>${location}</span>
       </div>
       ` : ''}
     </section>

@@ -3,7 +3,8 @@ import type { APIRoute } from 'astro';
 import { getDB, generateProjectId, nowISO } from '../../lib/db/client';
 import { deviceExists, registerDevice } from '../../lib/db/devices';
 import { logEvent } from '../../lib/db/events';
-import type { ApiResponse, MigrationPayload, LocalStorageProject, DBProject } from '../../types/database';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../lib/security';
+import type { ApiResponse, MigrationPayload, DBProject } from '../../types/database';
 
 interface MigrationResult {
   migratedCount: number;
@@ -12,6 +13,13 @@ interface MigrationResult {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Rate limiting - migration is expensive
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`migrate:${clientIP}`, 5, 60000); // 5 per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+  
   try {
     const db = getDB(locals);
     const body = await request.json() as MigrationPayload;
