@@ -2,6 +2,7 @@ import type { APIRoute, APIContext } from 'astro';
 import type { Project } from '../../types/project';
 import { generateLandingPage } from '../../lib/landingPageGenerator';
 import { shortenUrl } from '../../lib/urlShortener';
+import { isKVAvailable, safeKVPut } from '../../lib/kvErrorHandler';
 
 export const prerender = false;
 
@@ -87,11 +88,27 @@ export const POST: APIRoute = async (context) => {
       colorTheme: project.colorTheme,
     });
 
+    // Check KV availability
+    const kv = getKV(context);
+    
+    if (!isKVAvailable(kv)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Storage tidak tersedia. Silakan coba lagi nanti.',
+          errorCode: 'KV_UNAVAILABLE',
+        }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Generate landing page HTML
     const { html } = generateLandingPage(project);
     
     // Generate unique slug
-    const kv = getKV(context);
     const baseSlug = generateSlug(project.businessName);
     const slug = await getUniqueSlug(kv, baseSlug);
     
@@ -102,22 +119,33 @@ export const POST: APIRoute = async (context) => {
     const url = `${baseUrl}/p/${slug}`;
     const domain = `${requestUrl.host}/p/${slug}`;
 
-    // Store to KV if available
-    if (kv) {
-      const kvData = {
-        html,
-        businessName: project.businessName,
-        projectId: project.id,
-        createdAt: new Date().toISOString(),
-        template: project.template,
-        colorTheme: project.colorTheme,
-      };
-      
-      await kv.put(`landing:${slug}`, JSON.stringify(kvData));
-      console.log(`Landing page deployed to KV: ${slug}`);
-    } else {
-      console.log('KV not available, returning simulated deployment');
+    // Store to KV with retry logic
+    const kvData = {
+      html,
+      businessName: project.businessName,
+      projectId: project.id,
+      createdAt: new Date().toISOString(),
+      template: project.template,
+      colorTheme: project.colorTheme,
+    };
+    
+    const putResult = await safeKVPut(kv, `landing:${slug}`, JSON.stringify(kvData));
+    
+    if (!putResult.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: putResult.error || 'Gagal menyimpan halaman',
+          errorCode: putResult.errorCode,
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
+    
+    console.log(`Landing page deployed to KV: ${slug}`);
 
     // Generate short URL (tries external services, falls back to internal)
     let shortUrl: string | undefined;
@@ -128,8 +156,8 @@ export const POST: APIRoute = async (context) => {
         console.log(`Short URL generated via ${shortResult.provider}: ${shortUrl}`);
         
         // If internal shortener was used, store mapping in KV
-        if (shortResult.provider === 'internal' && shortResult.shortCode && kv) {
-          await kv.put(`short:${shortResult.shortCode}`, slug);
+        if (shortResult.provider === 'internal' && shortResult.shortCode) {
+          await safeKVPut(kv, `short:${shortResult.shortCode}`, slug);
           console.log(`Internal short mapping stored: ${shortResult.shortCode} -> ${slug}`);
         }
       }
@@ -142,11 +170,11 @@ export const POST: APIRoute = async (context) => {
       JSON.stringify({
         success: true,
         url,
-        shortUrl, // is.gd short link (optional)
+        shortUrl,
         domain,
         slug,
-        html, // Include HTML for preview
-        isReal: !!kv, // Indicate if this was a real deployment
+        html,
+        isReal: true,
       }),
       {
         status: 200,

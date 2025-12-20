@@ -44,7 +44,27 @@ export type EventType =
   | 'project_deleted'
   | 'status_changed'
   | 'deployed'
-  | 'migration_completed';
+  | 'migration_completed'
+  | 'link_click';
+
+/**
+ * Event data structure for link_click events
+ * Stored as JSON string in event_data column
+ * 
+ * @example
+ * {
+ *   "slug": "warung-makan-bu-sri",
+ *   "referrer": "https://wa.me/...",
+ *   "user_agent": "Mozilla/5.0...",
+ *   "project_id": "proj_123..."
+ * }
+ */
+export interface LinkClickEventData {
+  slug: string;
+  referrer: string | null;
+  user_agent: string | null;
+  project_id?: string;
+}
 
 // API Response types
 export interface ApiResponse<T> {
