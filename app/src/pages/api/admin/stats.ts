@@ -7,8 +7,18 @@ import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
 import { getMetrics } from '../../../lib/db/events';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 
-export const GET: APIRoute = async ({ locals }) => {
+export const prerender = false;
+
+export const GET: APIRoute = async ({ locals, request }) => {
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`stats:${clientIP}`, 30, 60000); // 30 requests per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
+
   try {
     const db = getDB(locals);
     

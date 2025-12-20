@@ -3,6 +3,7 @@ import type { Project } from '../../types/project';
 import { generateLandingPage } from '../../lib/landingPageGenerator';
 import { shortenUrl } from '../../lib/urlShortener';
 import { isKVAvailable, safeKVPut } from '../../lib/kvErrorHandler';
+import { checkRateLimit, rateLimitResponse, getClientIP, sanitizeInput } from '../../lib/security';
 
 export const prerender = false;
 
@@ -47,6 +48,13 @@ interface DeployRequestBody {
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
+  
+  // Rate limiting - 10 deploys per minute per IP
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`deploy:${clientIP}`, 10, 60000);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
   
   try {
     const body: DeployRequestBody = await request.json();

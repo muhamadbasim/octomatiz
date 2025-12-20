@@ -30,6 +30,13 @@ function createMockContext(searchParams: Record<string, string> = {}) {
     url.searchParams.set(key, value);
   });
   
+  // Create mock request with headers for rate limiting
+  const mockRequest = {
+    headers: new Headers({
+      'x-forwarded-for': '127.0.0.1',
+    }),
+  };
+  
   return {
     locals: {
       runtime: {
@@ -39,6 +46,7 @@ function createMockContext(searchParams: Record<string, string> = {}) {
       },
     },
     url,
+    request: mockRequest,
   };
 }
 

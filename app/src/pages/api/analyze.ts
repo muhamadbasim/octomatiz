@@ -2,6 +2,7 @@ import type { APIRoute, APIContext } from 'astro';
 import { analyzeImageWithGemini, type GeminiResult } from '../../lib/gemini';
 import { analyzeImageWithGroq } from '../../lib/groq';
 import type { BusinessCategory } from '../../types/project';
+import { checkRateLimit, rateLimitResponse, getClientIP } from '../../lib/security';
 
 export const prerender = false;
 
@@ -44,6 +45,29 @@ interface AnalyzeRequestBody {
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
+  
+  // Rate limiting - 5 AI requests per minute per IP (expensive operation)
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`analyze:${clientIP}`, 5, 60000);
+  if (!rateLimit.allowed) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT',
+          message: 'Terlalu banyak permintaan. Tunggu sebentar.',
+        },
+      } as GeminiResult),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString(),
+        },
+      }
+    );
+  }
+  
   try {
     // Get API keys from environment (works on both local and Cloudflare)
     const geminiKey = getEnvVar(context, 'GEMINI_API_KEY');

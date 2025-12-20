@@ -12,11 +12,19 @@
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { getSlugAnalytics, getAllAnalytics, type AnalyticsSummary } from '../../../lib/analytics';
+import { checkRateLimit, rateLimitResponse, getClientIP, isValidSlug } from '../../../lib/security';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ locals, url }) => {
+export const GET: APIRoute = async ({ locals, url, request }) => {
   const startTime = Date.now();
+  
+  // Rate limiting
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`analytics:${clientIP}`, 30, 60000); // 30 requests per minute
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.resetIn);
+  }
   
   try {
     const db = getDB(locals);
@@ -25,6 +33,17 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const slug = url.searchParams.get('slug');
     const daysParam = url.searchParams.get('days');
     const days = daysParam ? parseInt(daysParam, 10) : 30;
+    
+    // Validate slug if provided
+    if (slug && !isValidSlug(slug)) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Format slug tidak valid',
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     
     // Validate days parameter
     if (isNaN(days) || days < 1 || days > 365) {

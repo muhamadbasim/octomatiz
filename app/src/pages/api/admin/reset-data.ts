@@ -4,20 +4,32 @@
  * 
  * WARNING: This will delete ALL data from the database!
  * Only use for development/testing purposes.
+ * 
+ * REQUIRES: Authorization header with ADMIN_SECRET
  */
 
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
+import { verifyAdminAuth, unauthorizedResponse, checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ locals, request }) => {
+export const POST: APIRoute = async (context) => {
+  const { locals, request } = context;
+  
   try {
-    // Optional: Add authentication check here
-    // const authHeader = request.headers.get('Authorization');
-    // if (authHeader !== `Bearer ${import.meta.env.ADMIN_SECRET}`) {
-    //   return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    // }
+    // Rate limiting - very strict for destructive endpoint
+    const clientIP = getClientIP(request);
+    const rateLimit = checkRateLimit(`reset:${clientIP}`, 3, 3600000); // 3 requests per hour
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.resetIn);
+    }
+
+    // Authentication required
+    if (!verifyAdminAuth(context, request)) {
+      console.warn(`Unauthorized reset-data attempt from IP: ${clientIP}`);
+      return unauthorizedResponse();
+    }
 
     const db = getDB(locals);
     
