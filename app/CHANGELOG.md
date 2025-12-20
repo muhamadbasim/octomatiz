@@ -5,6 +5,32 @@ Semua perubahan penting pada project OCTOmatiz akan didokumentasikan di file ini
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2024-12-20
+
+### Added
+- **Cloudflare D1 Database** - Migrasi dari localStorage ke D1 untuk persistent storage
+  - Device registration dengan unique ID
+  - Project CRUD operations via API
+  - Automatic localStorage migration on first load
+- **Admin Dashboard** (`/admin`) - SaaS unit economics dashboard
+  - Vital Signs: MRR, Churn, NRR metrics
+  - Efficiency: CAC, LTV, LTV:CAC ratio
+  - Charts: MRR Trend, Cohort Heatmap, LTV:CAC by segment
+  - Real Stats section showing D1 data (Total Projects, Devices, Deployments)
+- **API Routes** for D1 operations
+  - `/api/device/register` - Device registration
+  - `/api/projects` - List/Create projects
+  - `/api/projects/[id]` - Get/Update/Delete project
+  - `/api/migrate` - Migrate localStorage data
+  - `/api/admin/stats` - Real D1 statistics
+
+### Changed
+- All step components now use D1 API instead of localStorage
+- ProjectContext updated to use async D1 operations
+- 114 property-based tests for D1 operations
+
+---
+
 ## [1.6.0] - 2024-12-19
 
 ### Added
@@ -165,6 +191,7 @@ dan project ini menggunakan [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date       | Description                    |
 |---------|------------|--------------------------------|
+| 1.7.0   | 2024-12-20 | Cloudflare D1 database migration |
 | 1.6.0   | 2024-12-19 | URL shortener with clck.ru     |
 | 1.5.0   | 2024-12-18 | Real landing page deployment   |
 | 1.4.0   | 2024-12-18 | Fix Cloudflare env for AI API  |
