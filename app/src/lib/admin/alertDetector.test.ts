@@ -46,7 +46,7 @@ describe('Alert Detector', () => {
       fc.assert(
         fc.property(
           fc.double({ min: 100, max: 10000, noNaN: true }), // previousCAC
-          fc.double({ min: 0.5, max: 1.2, noNaN: true }),   // multiplier <= 1.2 (<=20% increase)
+          fc.double({ min: 0.5, max: 1.199, noNaN: true }), // multiplier < 1.2 (< 20% increase, with margin for float precision)
           (previousCAC, multiplier) => {
             const currentCAC = previousCAC * multiplier;
             const shouldAlert = shouldTriggerCACAlert(currentCAC, previousCAC, 20);
