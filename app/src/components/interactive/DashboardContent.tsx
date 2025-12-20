@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProjects } from '../../hooks/useProject';
 import { DashboardSkeleton } from './SkeletonCard';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { Toast, useToast } from './Toast';
 import type { Project } from '../../types/project';
+
+// Global stats from D1
+interface GlobalStats {
+  totalProjects: number;
+  projectsByStatus: { draft: number; building: number; live: number };
+  totalDevices: number;
+  totalDeployments: number;
+}
 
 interface ProjectCardProps {
   project: Project;
@@ -151,6 +159,25 @@ export function DashboardContent() {
     name: '',
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
+
+  // Fetch global stats from D1
+  useEffect(() => {
+    const fetchGlobalStats = async () => {
+      try {
+        const response = await fetch('/api/admin/stats');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setGlobalStats(data.data);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch global stats:', err);
+      }
+    };
+    fetchGlobalStats();
+  }, []);
 
   const handleCreateProject = async () => {
     setIsCreating(true);
@@ -249,13 +276,41 @@ export function DashboardContent() {
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-4 flex flex-col gap-1">
           <span className="text-2xl font-bold text-primary">{totalProjects}</span>
-          <span className="text-xs text-gray-400">Total Proyek</span>
+          <span className="text-xs text-gray-400">Proyek Kamu</span>
         </div>
         <div className="card p-4 flex flex-col gap-1">
           <span className="text-2xl font-bold text-blue-400">{liveProjects}</span>
           <span className="text-xs text-gray-400">Sudah Live</span>
         </div>
       </div>
+
+      {/* Global Stats from D1 */}
+      {globalStats && (
+        <div className="card p-4 bg-gradient-to-r from-primary/10 to-blue-500/10 border-primary/20">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="material-symbols-outlined text-primary text-[20px]">database</span>
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Data Global (D1)</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <div>
+              <div className="text-lg font-bold text-white">{globalStats.totalProjects}</div>
+              <div className="text-[10px] text-gray-400">Total</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-green-400">{globalStats.projectsByStatus.live}</div>
+              <div className="text-[10px] text-gray-400">Live</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-yellow-400">{globalStats.projectsByStatus.building}</div>
+              <div className="text-[10px] text-gray-400">Building</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-purple-400">{globalStats.totalDevices}</div>
+              <div className="text-[10px] text-gray-400">Devices</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Project List */}
       <div className="flex flex-col gap-4">
