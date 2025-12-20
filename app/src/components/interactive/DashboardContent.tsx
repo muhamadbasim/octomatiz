@@ -263,12 +263,12 @@ export function DashboardContent() {
       {/* Project List */}
       <div className="flex flex-col gap-4">
         {projects.length === 0 ? (
-          <div className="card p-8 text-center">
+          <div className="card p-8 flex flex-col items-center justify-center text-center">
             <div className="text-4xl mb-3">🐙</div>
             <p className="text-gray-400 text-sm mb-4">Belum ada proyek. Mulai buat landing page pertamamu!</p>
             <button
               onClick={handleCreateProject}
-              className="btn-primary px-6 py-2 text-sm"
+              className="btn-primary px-6 py-2 text-sm inline-flex items-center justify-center gap-1"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
               Buat Proyek Baru
