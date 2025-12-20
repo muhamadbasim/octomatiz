@@ -15,6 +15,7 @@ import { CohortHeatmap } from './CohortHeatmap';
 import { LTVCACBarChart } from './LTVCACBarChart';
 import { DangerZone } from './DangerZone';
 import { SegmentFilter } from './SegmentFilter';
+import { LandingPageAnalytics } from './LandingPageAnalytics';
 
 // Import mock data for development
 import { getMockDashboardMetrics } from '../../lib/admin/mockData';
@@ -232,6 +233,9 @@ export function AdminDashboard() {
               selected={selectedSegment}
               onChange={handleSegmentChange}
             />
+
+            {/* Landing Page Analytics */}
+            <LandingPageAnalytics isLoading={isLoading} />
 
             {/* Real Stats from D1 */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
