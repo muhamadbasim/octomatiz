@@ -44,9 +44,9 @@ export function Step1Form() {
   }, [project?.id]); // Only reload when project ID changes
 
   // Auto-save form data
-  const handleSave = useCallback((data: FormData) => {
+  const handleSave = useCallback(async (data: FormData) => {
     if (!project) return;
-    updateProject({
+    await updateProject({
       businessName: data.businessName,
       whatsapp: data.whatsapp,
       category: data.category,
@@ -82,7 +82,7 @@ export function Step1Form() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate all fields
@@ -97,7 +97,7 @@ export function Step1Form() {
 
     if (validation.isValid) {
       // Save and navigate to next step
-      handleSave(formData);
+      await handleSave(formData);
       window.location.href = '/create/step-2';
     }
   };

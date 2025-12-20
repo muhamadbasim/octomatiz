@@ -11,9 +11,9 @@ export function useProject() {
     setCurrentStep,
   } = useProjectContext();
 
-  const updateCurrentProject = (data: Partial<Project>) => {
+  const updateCurrentProject = async (data: Partial<Project>) => {
     if (!currentProject) return;
-    updateProject(currentProject.id, data);
+    await updateProject(currentProject.id, data);
   };
 
   return {
@@ -31,6 +31,9 @@ export function useProjects() {
   const {
     projects,
     isLoading,
+    isMigrating,
+    error,
+    deviceId,
     createProject,
     updateProject,
     deleteProject,
@@ -48,6 +51,9 @@ export function useProjects() {
     buildingProjects,
     liveProjects,
     isLoading,
+    isMigrating,
+    error,
+    deviceId,
     createProject,
     updateProject,
     deleteProject,

@@ -143,17 +143,24 @@ function ProjectCard({ project, onContinue, onEdit, onDelete, onCopyLink }: Proj
 
 
 export function DashboardContent() {
-  const { projects, isLoading, createProject, deleteProject, loadProject, updateProject } = useProjects();
+  const { projects, isLoading, isMigrating, error, createProject, deleteProject, loadProject, updateProject } = useProjects();
   const { toast, showToast, hideToast } = useToast();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string; name: string }>({
     isOpen: false,
     id: '',
     name: '',
   });
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleCreateProject = () => {
-    const newProject = createProject();
-    window.location.href = `/create/step-1?id=${newProject.id}`;
+  const handleCreateProject = async () => {
+    setIsCreating(true);
+    const newProject = await createProject();
+    setIsCreating(false);
+    if (newProject) {
+      window.location.href = `/create/step-1?id=${newProject.id}`;
+    } else {
+      showToast('Gagal membuat proyek baru', 'error');
+    }
   };
 
   const handleContinueProject = (id: string) => {
@@ -163,9 +170,9 @@ export function DashboardContent() {
     window.location.href = `/create/step-${step}?id=${id}`;
   };
 
-  const handleEditProject = (id: string) => {
+  const handleEditProject = async (id: string) => {
     // Set project back to draft mode for editing
-    updateProject(id, { status: 'draft', currentStep: 1 });
+    await updateProject(id, { status: 'draft', currentStep: 1 });
     loadProject(id);
     window.location.href = `/create/step-1?id=${id}`;
   };
@@ -183,8 +190,8 @@ export function DashboardContent() {
     setDeleteModal({ isOpen: true, id, name });
   };
 
-  const handleDeleteConfirm = () => {
-    deleteProject(deleteModal.id);
+  const handleDeleteConfirm = async () => {
+    await deleteProject(deleteModal.id);
     setDeleteModal({ isOpen: false, id: '', name: '' });
     showToast('Proyek berhasil dihapus', 'success');
   };
@@ -197,9 +204,37 @@ export function DashboardContent() {
   const totalProjects = projects.length;
   const liveProjects = projects.filter(p => p.status === 'live').length;
 
-  // Show skeleton while loading
-  if (isLoading) {
-    return <DashboardSkeleton />;
+  // Show skeleton while loading or migrating
+  if (isLoading || isMigrating) {
+    return (
+      <>
+        {isMigrating && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-gray-900 rounded-xl p-6 text-center">
+              <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3"></div>
+              <p className="text-white text-sm">Memigrasikan data...</p>
+            </div>
+          </div>
+        )}
+        <DashboardSkeleton />
+      </>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="card p-8 text-center">
+        <div className="text-4xl mb-3">😵</div>
+        <p className="text-red-400 text-sm mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="btn-primary px-6 py-2 text-sm"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -253,10 +288,15 @@ export function DashboardContent() {
       {/* FAB - positioned above bottom navbar (h-16 = 64px + safe area) */}
       <button
         onClick={handleCreateProject}
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-black flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 z-40"
+        disabled={isCreating}
+        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-black flex items-center justify-center shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95 z-40 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="Buat proyek baru"
       >
-        <span className="material-symbols-outlined text-[28px]">add</span>
+        {isCreating ? (
+          <span className="animate-spin w-6 h-6 border-2 border-black border-t-transparent rounded-full"></span>
+        ) : (
+          <span className="material-symbols-outlined text-[28px]">add</span>
+        )}
       </button>
 
       {/* Delete Confirmation Modal */}

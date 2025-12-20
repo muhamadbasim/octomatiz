@@ -16,7 +16,7 @@ const CHECKLIST: ChecklistItem[] = [
 ];
 
 export function Step5Deploy() {
-  const { currentProject, loadProject, updateProject } = useProjectContext();
+  const { currentProject, loadProject, updateProject, deleteProject } = useProjectContext();
   const [stage, setStage] = useState<DeploymentStage>('generating');
   const [progress, setProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,47 +32,33 @@ export function Step5Deploy() {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
     
-    if (projectId) {
-      // Read directly from localStorage to get fresh data (including template from Step 4)
-      try {
-        const projectsData = localStorage.getItem('octomatiz_projects');
-        console.log('Step 5: Raw localStorage data:', projectsData?.substring(0, 500));
-        
-        if (projectsData) {
-          const projects = JSON.parse(projectsData);
-          const project = projects.find((p: { id: string }) => p.id === projectId);
-          
-          if (project) {
-            console.log('Step 5: Found project in localStorage:', {
-              id: project.id,
-              template: project.template,
-              colorTheme: project.colorTheme,
-              businessName: project.businessName,
-              status: project.status,
-              currentStep: project.currentStep,
-            });
-            
-            // CRITICAL: Ensure template has a value
-            if (!project.template) {
-              console.warn('Step 5: Template is missing! Defaulting to simple');
-              project.template = 'simple';
-            }
-            
-            setFreshProject(project);
-          } else {
-            console.error('Step 5: Project not found in localStorage for id:', projectId);
-          }
-        }
-      } catch (e) {
-        console.error('Error reading from localStorage:', e);
-      }
-      
-      // Also load to context
-      if (!currentProject) {
-        loadProject(projectId);
-      }
+    if (projectId && !currentProject) {
+      loadProject(projectId);
     }
   }, []);
+
+  // Sync freshProject from context
+  useEffect(() => {
+    if (currentProject) {
+      console.log('Step 5: Project loaded from context:', {
+        id: currentProject.id,
+        template: currentProject.template,
+        colorTheme: currentProject.colorTheme,
+        businessName: currentProject.businessName,
+        status: currentProject.status,
+        currentStep: currentProject.currentStep,
+      });
+      
+      // Ensure template has a value
+      const projectWithDefaults = {
+        ...currentProject,
+        template: currentProject.template || 'simple',
+        colorTheme: currentProject.colorTheme || 'green',
+      };
+      
+      setFreshProject(projectWithDefaults);
+    }
+  }, [currentProject]);
 
   const handleProgress = useCallback((progressData: DeploymentProgress) => {
     setStage(progressData.stage);
@@ -95,10 +81,10 @@ export function Step5Deploy() {
       businessName: freshProject.businessName,
     });
 
-    // Start deployment with fresh project data from localStorage
-    deployProject(freshProject, handleProgress).then((result) => {
+    // Start deployment with fresh project data
+    deployProject(freshProject, handleProgress).then(async (result) => {
       if (result.success && result.url && result.domain) {
-        updateProject(freshProject.id, {
+        await updateProject(freshProject.id, {
           status: 'live',
           deployedUrl: result.url,
           domain: result.domain,
@@ -146,19 +132,14 @@ export function Step5Deploy() {
     setShowPreview(true);
   };
 
-  // Delete current project from localStorage and start fresh (for testing)
-  const handleTestAgain = () => {
+  // Delete current project and start fresh (for testing)
+  const handleTestAgain = async () => {
     if (!projectToUse?.id) return;
     
     try {
-      const STORAGE_KEY = 'octomatiz_projects';
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const projects = JSON.parse(stored);
-        const filtered = projects.filter((p: { id: string }) => p.id !== projectToUse.id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-        console.log('Project deleted from localStorage:', projectToUse.id);
-      }
+      // Delete via D1 API
+      await deleteProject(projectToUse.id);
+      console.log('Project deleted:', projectToUse.id);
     } catch (e) {
       console.error('Failed to delete project:', e);
     }

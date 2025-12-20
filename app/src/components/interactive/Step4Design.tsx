@@ -17,7 +17,7 @@ const COLORS: { id: ColorTheme; hex: string; name: string }[] = [
 ];
 
 export function Step4Design() {
-  const { currentProject, loadProject } = useProjectContext();
+  const { currentProject, loadProject, updateProject } = useProjectContext();
   const [template, setTemplate] = useState<TemplateStyle>('simple');
   const [colorTheme, setColorTheme] = useState<ColorTheme>('green');
   const [previewTemplate, setPreviewTemplate] = useState<TemplateStyle | null>(null);
@@ -53,7 +53,7 @@ export function Step4Design() {
     console.log('Step 4: ColorTheme state changed to:', colorTheme);
   }, [colorTheme]);
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!currentProject) {
       console.error('Step 4: currentProject is null!');
       alert('Error: Project tidak ditemukan. Silakan refresh halaman.');
@@ -68,65 +68,25 @@ export function Step4Design() {
       selectedColorTheme: colorTheme,
     });
     
-    // Save directly to localStorage ONLY (don't use updateProject to avoid race condition)
-    const STORAGE_KEY = 'octomatiz_projects';
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const projects = stored ? JSON.parse(stored) : [];
-      const index = projects.findIndex((p: { id: string }) => p.id === projectId);
+      // Save via D1 API
+      await updateProject(projectId, {
+        template: template,
+        colorTheme: colorTheme,
+        status: 'building',
+        currentStep: 5,
+      });
       
-      console.log('Step 4: Found project at index:', index);
+      console.log('Step 4: Saved to D1:', {
+        template,
+        colorTheme,
+      });
       
-      if (index >= 0) {
-        // Update project with new template and colorTheme
-        projects[index] = {
-          ...projects[index],
-          template: template,  // Explicitly set template
-          colorTheme: colorTheme,  // Explicitly set colorTheme
-          status: 'building',
-          currentStep: 5,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        // Save to localStorage
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-        
-        console.log('Step 4: Saved to localStorage:', {
-          template: projects[index].template,
-          colorTheme: projects[index].colorTheme,
-        });
-        
-        // Verify save immediately
-        const verifyStored = localStorage.getItem(STORAGE_KEY);
-        if (verifyStored) {
-          const verifyProjects = JSON.parse(verifyStored);
-          const verifyProject = verifyProjects.find((p: { id: string }) => p.id === projectId);
-          console.log('Step 4: VERIFIED in localStorage:', {
-            template: verifyProject?.template,
-            colorTheme: verifyProject?.colorTheme,
-          });
-          
-          if (verifyProject?.template !== template || verifyProject?.colorTheme !== colorTheme) {
-            console.error('Step 4: VERIFICATION FAILED!', {
-              expectedTemplate: template,
-              actualTemplate: verifyProject?.template,
-              expectedColor: colorTheme,
-              actualColor: verifyProject?.colorTheme,
-            });
-            alert('Error: Gagal menyimpan. Silakan coba lagi.');
-            return;
-          }
-        }
-        
-        // Navigate to Step 5 (DON'T call updateProject - it causes race condition)
-        console.log('Step 4: Navigating to Step 5...');
-        window.location.href = `/create/step-5?id=${projectId}`;
-      } else {
-        console.error('Step 4: Project not found in localStorage!');
-        alert('Error: Project tidak ditemukan di storage. Silakan mulai ulang.');
-      }
+      // Navigate to Step 5
+      console.log('Step 4: Navigating to Step 5...');
+      window.location.href = `/create/step-5?id=${projectId}`;
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      console.error('Failed to save:', error);
       alert('Error: Gagal menyimpan. Silakan coba lagi.');
     }
   };

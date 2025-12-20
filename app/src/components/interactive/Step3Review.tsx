@@ -19,37 +19,24 @@ export function Step3Review() {
   // State for product image from localStorage
   const [localProductImage, setLocalProductImage] = useState<string | null>(null);
 
-  // Load data on mount - read directly from localStorage to avoid race conditions
+  // Load data on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
     
     if (projectId) {
-      // Read directly from localStorage first (synchronous, guaranteed fresh data)
-      try {
-        const projectsData = localStorage.getItem('octomatiz_projects');
-        if (projectsData) {
-          const projects = JSON.parse(projectsData);
-          const project = projects.find((p: { id: string }) => p.id === projectId);
-          if (project) {
-            console.log('Direct localStorage read:', {
-              headline: project.headline,
-              storytelling: project.storytelling,
-              hasImage: !!project.productImage
-            });
-            setHeadline(project.headline || '');
-            setStorytelling(project.storytelling || '');
-            setLocalProductImage(project.productImage || null);
-          }
-        }
-      } catch (e) {
-        console.error('Error reading from localStorage:', e);
-      }
-      
-      // Also load to context for other functionality
       loadProject(projectId);
     }
   }, []);
+
+  // Sync form state when project loads
+  useEffect(() => {
+    if (currentProject) {
+      setHeadline(currentProject.headline || '');
+      setStorytelling(currentProject.storytelling || '');
+      setLocalProductImage(currentProject.productImage || null);
+    }
+  }, [currentProject?.id, currentProject?.headline, currentProject?.storytelling, currentProject?.productImage]);
 
   const handleRegenerate = useCallback(async () => {
     if (!currentProject?.productImage || !canRegenerate) return;
@@ -94,34 +81,16 @@ export function Step3Review() {
   const isStoryTooShort = storyWordCount < STORYTELLING_MIN_WORDS && storyWordCount > 0;
   const isStoryTooLong = storyWordCount > STORYTELLING_MAX_WORDS;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!currentProject) return;
     
-    // Save directly to localStorage BEFORE navigation (bypass React state race condition)
-    const STORAGE_KEY = 'octomatiz_projects';
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const projects = stored ? JSON.parse(stored) : [];
-      const index = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
-      
-      if (index >= 0) {
-        projects[index] = {
-          ...projects[index],
-          headline,
-          storytelling,
-          currentStep: 4,
-          updatedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-        console.log('Step 3: Saved content directly to localStorage');
-      }
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-    }
-    
-    // Also update React context (for consistency)
-    updateProject(currentProject.id, { headline, storytelling });
-    setCurrentStep(4);
+    // Save via D1 API
+    await updateProject(currentProject.id, { 
+      headline, 
+      storytelling,
+      currentStep: 4,
+    });
+    await setCurrentStep(4);
     
     // Navigate to Step 4
     window.location.href = `/create/step-4?id=${currentProject.id}`;

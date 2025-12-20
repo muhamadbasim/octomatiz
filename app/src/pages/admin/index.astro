@@ -1,0 +1,12 @@
+---
+/**
+ * Admin Dashboard Page
+ * Displays unit economics and truth metrics for SaaS business health
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { AdminDashboard } from '../../components/admin/AdminDashboard';
+---
+
+<BaseLayout title="Admin Dashboard - OCTOmatiz">
+  <AdminDashboard client:load />
+</BaseLayout>
