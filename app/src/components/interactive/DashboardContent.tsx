@@ -40,6 +40,9 @@ function ProjectCard({ project, onContinue, onEdit, onDelete, onCopyLink }: Proj
   const config = statusConfig[project.status];
   const displayName = project.businessName || 'Proyek Baru';
   const displayImage = project.productImage || 'https://via.placeholder.com/80x80/1a1a2e/36e27b?text=🐙';
+  
+  // Extract domain from deployedUrl (e.g., "https://octomatiz.pages.dev/p/xxx" -> "octomatiz.pages.dev/p/xxx")
+  const displayDomain = project.deployedUrl?.replace(/^https?:\/\//, '') || project.domain;
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -47,14 +50,14 @@ function ProjectCard({ project, onContinue, onEdit, onDelete, onCopyLink }: Proj
   };
 
   const handleCopyLink = () => {
-    if (project.domain) {
-      onCopyLink(project.domain);
+    if (project.deployedUrl) {
+      onCopyLink(project.deployedUrl);
     }
   };
 
   const handleVisitSite = () => {
-    if (project.domain) {
-      window.open(`https://${project.domain}`, '_blank');
+    if (project.deployedUrl) {
+      window.open(project.deployedUrl, '_blank');
     }
   };
 
@@ -89,12 +92,12 @@ function ProjectCard({ project, onContinue, onEdit, onDelete, onCopyLink }: Proj
             </button>
           </div>
           <h3 className="text-white text-base font-bold truncate leading-tight">{displayName}</h3>
-          {project.domain ? (
+          {displayDomain ? (
             <button 
               onClick={handleVisitSite}
               className="text-gray-400 text-xs hover:text-primary truncate transition-colors text-left"
             >
-              {project.domain} ↗
+              {displayDomain} ↗
             </button>
           ) : (
             <span className="text-gray-500 text-xs italic">Belum dipublikasi</span>
@@ -177,9 +180,9 @@ export function DashboardContent() {
     window.location.href = `/create/step-1?id=${id}`;
   };
 
-  const handleCopyLink = async (domain: string) => {
+  const handleCopyLink = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(`https://${domain}`);
+      await navigator.clipboard.writeText(url);
       showToast('Link berhasil disalin!', 'success');
     } catch {
       showToast('Gagal menyalin link', 'error');
