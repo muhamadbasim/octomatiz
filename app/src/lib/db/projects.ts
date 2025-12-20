@@ -168,3 +168,12 @@ export async function countProjectsByStatus(db: D1Database): Promise<Record<stri
   }
   return counts;
 }
+
+
+export async function countDevices(db: D1Database): Promise<number> {
+  const result = await db.prepare(`
+    SELECT COUNT(*) as count FROM devices
+  `).first<{ count: number }>();
+  
+  return result?.count || 0;
+}

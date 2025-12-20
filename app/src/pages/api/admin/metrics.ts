@@ -1,7 +1,7 @@
 /**
  * Admin Metrics API Endpoint
  * Returns dashboard metrics data based on segment filter
- * Now uses D1 database for real project data
+ * Uses D1 database for real project data by default
  */
 
 import type { APIRoute } from 'astro';
@@ -9,13 +9,13 @@ import type { SegmentType, MetricsAPIResponse, DashboardMetrics } from '../../..
 import { getMockDashboardMetrics } from '../../../lib/admin/mockData';
 import { getDB } from '../../../lib/db/client';
 import { getMetrics } from '../../../lib/db/events';
-import { countProjectsByStatus } from '../../../lib/db/projects';
+import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
     const url = new URL(request.url);
     const segment = (url.searchParams.get('segment') || 'all') as SegmentType;
-    const useRealData = url.searchParams.get('real') === 'true';
+    const useMockData = url.searchParams.get('mock') === 'true';
 
     // Validate segment
     if (!['all', 'basic', 'premium'].includes(segment)) {
@@ -33,29 +33,52 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     let metrics: DashboardMetrics;
 
-    if (useRealData) {
-      // Fetch real data from D1
+    if (useMockData) {
+      // Return mock data only if explicitly requested
+      metrics = getMockDashboardMetrics(segment);
+    } else {
+      // Default: Fetch real data from D1
       try {
         const db = getDB(locals);
         const d1Metrics = await getMetrics(db);
         const statusCounts = await countProjectsByStatus(db);
+        const deviceCount = await countDevices(db);
         
-        // Get mock metrics as base, then enhance with real data
+        // Get mock metrics as base structure
         const mockMetrics = getMockDashboardMetrics(segment);
         
-        // Calculate real ARPU based on actual project counts
-        // For now, we estimate based on project activity
+        // Calculate real metrics based on actual data
         const totalProjects = d1Metrics.totalProjects;
         const liveProjects = statusCounts.live || 0;
+        const buildingProjects = statusCounts.building || 0;
+        const draftProjects = statusCounts.draft || 0;
+        
+        // Estimate MRR based on live projects (Rp 50,000 per live project as example)
+        const estimatedMRR = liveProjects * 50000;
         
         metrics = {
           ...mockMetrics,
-          // We can add real project metrics to the response
-          // The financial metrics (MRR, LTV, etc.) remain mock for now
-          // as they require payment integration
+          mrr: {
+            ...mockMetrics.mrr,
+            value: estimatedMRR,
+            change: totalProjects > 0 ? ((liveProjects / totalProjects) * 100) : 0,
+          },
+          vitalSigns: {
+            ...mockMetrics.vitalSigns,
+            mrrGrowth: {
+              ...mockMetrics.vitalSigns.mrrGrowth,
+              value: totalProjects > 0 ? (liveProjects / totalProjects) * 100 : 0,
+            },
+          },
+          productHealth: {
+            ...mockMetrics.productHealth,
+            activeUsers: deviceCount,
+            projectsCreated: totalProjects,
+            deploymentSuccessRate: totalProjects > 0 ? (liveProjects / totalProjects) * 100 : 0,
+          },
         };
         
-        // Add real project stats to response (as custom field)
+        // Add real project stats to response
         (metrics as DashboardMetrics & { realProjectStats?: unknown }).realProjectStats = {
           totalProjects,
           projectsByStatus: statusCounts,
@@ -63,14 +86,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
           projectsCreatedThisWeek: d1Metrics.projectsCreatedThisWeek,
           projectsCreatedThisMonth: d1Metrics.projectsCreatedThisMonth,
           totalDeployments: d1Metrics.totalDeployments,
+          totalDevices: deviceCount,
         };
       } catch (dbError) {
         console.warn('D1 not available, falling back to mock data:', dbError);
         metrics = getMockDashboardMetrics(segment);
       }
-    } else {
-      // Return mock data (default for now)
-      metrics = getMockDashboardMetrics(segment);
     }
 
     const response: MetricsAPIResponse = {
