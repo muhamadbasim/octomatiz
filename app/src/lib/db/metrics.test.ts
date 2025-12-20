@@ -56,11 +56,15 @@ describe('Metrics Aggregation', () => {
   });
 
   it('should correctly aggregate time-based metrics', () => {
+    // Use fixed date range to avoid invalid date issues
+    const minDate = new Date('2024-01-01T00:00:00.000Z');
+    const maxDate = new Date('2025-12-31T23:59:59.999Z');
+    
     fc.assert(
       fc.property(
         fc.array(fc.record({
           id: fc.string({ minLength: 10 }),
-          created_at: fc.date({ min: new Date('2024-01-01'), max: new Date('2025-12-31') }).map(d => d.toISOString()),
+          created_at: fc.integer({ min: minDate.getTime(), max: maxDate.getTime() }).map(ts => new Date(ts).toISOString()),
         }), { minLength: 0, maxLength: 50 }),
         (projects) => {
           const now = new Date();

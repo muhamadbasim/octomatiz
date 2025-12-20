@@ -13,6 +13,11 @@ const templateArb = fc.constantFrom('simple', 'warm', 'modern');
 const colorThemeArb = fc.constantFrom('green', 'blue', 'amber', 'pink');
 const statusArb = fc.constantFrom('draft', 'building', 'live');
 
+// Valid date range for ISO string generation (use timestamp approach for reliability)
+const minDateTs = new Date('2020-01-01T00:00:00.000Z').getTime();
+const maxDateTs = new Date('2030-12-31T23:59:59.999Z').getTime();
+const validDateArb = fc.integer({ min: minDateTs, max: maxDateTs }).map(ts => new Date(ts));
+
 const localStorageProjectArb = fc.record({
   id: fc.string({ minLength: 10, maxLength: 50 }),
   businessName: fc.option(businessNameArb, { nil: undefined }),
@@ -27,8 +32,8 @@ const localStorageProjectArb = fc.record({
   currentStep: fc.option(fc.integer({ min: 1, max: 5 }), { nil: undefined }),
   status: fc.option(statusArb, { nil: undefined }),
   deployedUrl: fc.option(fc.webUrl(), { nil: undefined }),
-  createdAt: fc.option(fc.date().map(d => d.toISOString()), { nil: undefined }),
-  updatedAt: fc.option(fc.date().map(d => d.toISOString()), { nil: undefined }),
+  createdAt: fc.option(validDateArb.map(d => d.toISOString()), { nil: undefined }),
+  updatedAt: fc.option(validDateArb.map(d => d.toISOString()), { nil: undefined }),
 });
 
 describe('Device Isolation', () => {
@@ -72,7 +77,7 @@ describe('Device Isolation', () => {
     fc.assert(
       fc.property(
         fc.array(fc.record({
-          id: fc.string({ minLength: 10, maxLength: 30 }),
+          id: fc.uuid(), // Use UUID to ensure unique IDs
           device_id: fc.constantFrom('device_main', 'device_linked', 'device_other'),
           business_name: businessNameArb,
         }), { minLength: 5, maxLength: 20 }),
@@ -92,7 +97,9 @@ describe('Device Isolation', () => {
           // Should NOT include projects from unlinked device
           const otherProjects = projects.filter(p => p.device_id === 'device_other');
           for (const project of otherProjects) {
-            expect(filtered.find(f => f.id === project.id)).toBeUndefined();
+            // Check by ID - other device projects should not be in filtered
+            const foundInFiltered = filtered.some(f => f.id === project.id);
+            expect(foundInFiltered).toBe(false);
           }
           
           return true;
