@@ -1,36 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  isPinEnabled,
-  hasPinSet,
   verifyPin,
-  setPin,
   isLocked,
   recordFailedAttempt,
   resetAttempts,
-  disablePin,
 } from '../../lib/pinSecurity';
 
 interface PinLockScreenProps {
   onUnlock: () => void;
 }
 
-type Mode = 'enter' | 'setup' | 'confirm';
-
 export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   const [pin, setLocalPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
-  const [mode, setMode] = useState<Mode>('enter');
   const [error, setError] = useState('');
   const [lockInfo, setLockInfo] = useState({ locked: false, remainingTime: 0 });
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Check if PIN is set, if not go to setup mode
-    if (!hasPinSet()) {
-      setMode('setup');
-    }
-    
     // Check lock status
     const checkLock = () => {
       const info = isLocked();
@@ -44,19 +31,14 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, [mode]);
+  }, []);
 
   const handlePinChange = (value: string) => {
     if (!/^\d*$/.test(value)) return;
     if (value.length > 6) return;
     
     setError('');
-    
-    if (mode === 'confirm') {
-      setConfirmPin(value);
-    } else {
-      setLocalPin(value);
-    }
+    setLocalPin(value);
   };
 
   const triggerShake = () => {
@@ -67,32 +49,6 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
   const handleSubmit = () => {
     if (lockInfo.locked) return;
 
-    if (mode === 'setup') {
-      if (pin.length < 4) {
-        setError('PIN minimal 4 digit');
-        triggerShake();
-        return;
-      }
-      setMode('confirm');
-      return;
-    }
-
-    if (mode === 'confirm') {
-      if (confirmPin !== pin) {
-        setError('PIN tidak cocok');
-        setConfirmPin('');
-        triggerShake();
-        return;
-      }
-      if (setPin(pin)) {
-        onUnlock();
-      } else {
-        setError('Gagal menyimpan PIN');
-      }
-      return;
-    }
-
-    // Enter mode - verify PIN
     if (verifyPin(pin)) {
       resetAttempts();
       onUnlock();
@@ -116,26 +72,14 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
 
   const handleNumberClick = (num: string) => {
     if (lockInfo.locked) return;
-    const currentPin = mode === 'confirm' ? confirmPin : pin;
-    if (currentPin.length < 6) {
-      handlePinChange(currentPin + num);
+    if (pin.length < 6) {
+      handlePinChange(pin + num);
     }
   };
 
   const handleBackspace = () => {
-    if (mode === 'confirm') {
-      setConfirmPin(prev => prev.slice(0, -1));
-    } else {
-      setLocalPin(prev => prev.slice(0, -1));
-    }
+    setLocalPin(prev => prev.slice(0, -1));
   };
-
-  const handleSkipSetup = () => {
-    disablePin();
-    onUnlock();
-  };
-
-  const currentPin = mode === 'confirm' ? confirmPin : pin;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -153,15 +97,9 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
       </div>
 
       {/* Title */}
-      <h1 className="text-xl font-bold text-white mb-2">
-        {mode === 'setup' && 'Buat PIN Keamanan'}
-        {mode === 'confirm' && 'Konfirmasi PIN'}
-        {mode === 'enter' && 'Masukkan PIN'}
-      </h1>
+      <h1 className="text-xl font-bold text-white mb-2">Masukkan PIN</h1>
       <p className="text-gray-400 text-sm mb-8 text-center">
-        {mode === 'setup' && 'Lindungi data proyek kamu dengan PIN 4-6 digit'}
-        {mode === 'confirm' && 'Masukkan PIN yang sama untuk konfirmasi'}
-        {mode === 'enter' && 'Masukkan PIN untuk membuka dashboard'}
+        Masukkan PIN untuk membuka dashboard
       </p>
 
       {/* Lock message */}
@@ -180,7 +118,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
           <div
             key={i}
             className={`w-4 h-4 rounded-full transition-all duration-200 ${
-              i < currentPin.length
+              i < pin.length
                 ? 'bg-primary scale-110'
                 : 'bg-gray-700'
             }`}
@@ -199,7 +137,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
         type="tel"
         inputMode="numeric"
         pattern="[0-9]*"
-        value={currentPin}
+        value={pin}
         onChange={(e) => handlePinChange(e.target.value)}
         onKeyPress={handleKeyPress}
         className="sr-only"
@@ -237,36 +175,11 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
       {/* Submit button */}
       <button
         onClick={handleSubmit}
-        disabled={currentPin.length < 4 || lockInfo.locked}
+        disabled={pin.length < 4 || lockInfo.locked}
         className="w-full max-w-xs h-12 rounded-full bg-primary text-black font-bold text-sm transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {mode === 'setup' && 'Lanjut'}
-        {mode === 'confirm' && 'Simpan PIN'}
-        {mode === 'enter' && 'Buka'}
+        Buka
       </button>
-
-      {/* Skip setup option */}
-      {mode === 'setup' && (
-        <button
-          onClick={handleSkipSetup}
-          className="mt-4 text-gray-500 text-sm hover:text-gray-400 transition-colors"
-        >
-          Lewati untuk sekarang
-        </button>
-      )}
-
-      {/* Back button for confirm mode */}
-      {mode === 'confirm' && (
-        <button
-          onClick={() => {
-            setMode('setup');
-            setConfirmPin('');
-          }}
-          className="mt-4 text-gray-500 text-sm hover:text-gray-400 transition-colors"
-        >
-          ← Kembali
-        </button>
-      )}
     </div>
   );
 }

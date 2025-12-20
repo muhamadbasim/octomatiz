@@ -1,70 +1,44 @@
 /**
  * PIN Security for Dashboard
- * Simple PIN-based protection for user dashboard
+ * Hardcoded PIN protection for user dashboard
  */
 
-const PIN_KEY = 'octomatiz_user_pin';
-const PIN_ENABLED_KEY = 'octomatiz_pin_enabled';
 const PIN_LOCKED_UNTIL_KEY = 'octomatiz_pin_locked_until';
 const PIN_ATTEMPTS_KEY = 'octomatiz_pin_attempts';
+
+// Hardcoded PIN - change this to update the access code
+const HARDCODED_PIN = '778899';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Simple hash function for PIN (not cryptographically secure, but sufficient for local storage)
- */
-function hashPin(pin: string): string {
-  let hash = 0;
-  for (let i = 0; i < pin.length; i++) {
-    const char = pin.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(36);
-}
-
-/**
- * Check if PIN security is enabled
+ * Check if PIN security is enabled (always true with hardcoded PIN)
  */
 export function isPinEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(PIN_ENABLED_KEY) === 'true';
-}
-
-/**
- * Check if PIN is set
- */
-export function hasPinSet(): boolean {
-  if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem(PIN_KEY);
-}
-
-/**
- * Set a new PIN
- */
-export function setPin(pin: string): boolean {
-  if (typeof window === 'undefined') return false;
-  if (pin.length < 4 || pin.length > 6) return false;
-  if (!/^\d+$/.test(pin)) return false;
-  
-  localStorage.setItem(PIN_KEY, hashPin(pin));
-  localStorage.setItem(PIN_ENABLED_KEY, 'true');
-  localStorage.removeItem(PIN_ATTEMPTS_KEY);
-  localStorage.removeItem(PIN_LOCKED_UNTIL_KEY);
   return true;
 }
 
 /**
- * Verify PIN
+ * Check if PIN is set (always true with hardcoded PIN)
+ */
+export function hasPinSet(): boolean {
+  return true;
+}
+
+/**
+ * Set a new PIN - disabled for hardcoded mode
+ */
+export function setPin(_pin: string): boolean {
+  // Disabled - PIN is hardcoded
+  return false;
+}
+
+/**
+ * Verify PIN against hardcoded value
  */
 export function verifyPin(pin: string): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  const storedHash = localStorage.getItem(PIN_KEY);
-  if (!storedHash) return false;
-  
-  return hashPin(pin) === storedHash;
+  return pin === HARDCODED_PIN;
 }
 
 /**
@@ -115,14 +89,10 @@ export function resetAttempts(): void {
 }
 
 /**
- * Disable PIN security
+ * Disable PIN security - disabled for hardcoded mode
  */
 export function disablePin(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(PIN_KEY);
-  localStorage.removeItem(PIN_ENABLED_KEY);
-  localStorage.removeItem(PIN_ATTEMPTS_KEY);
-  localStorage.removeItem(PIN_LOCKED_UNTIL_KEY);
+  // Disabled - PIN is hardcoded
 }
 
 /**
