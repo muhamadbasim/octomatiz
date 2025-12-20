@@ -19,6 +19,17 @@ import { SegmentFilter } from './SegmentFilter';
 // Import mock data for development
 import { getMockDashboardMetrics } from '../../lib/admin/mockData';
 
+// Real stats from D1
+interface RealStats {
+  totalProjects: number;
+  projectsByStatus: { draft: number; building: number; live: number };
+  totalDevices: number;
+  projectsCreatedToday: number;
+  projectsCreatedThisWeek: number;
+  projectsCreatedThisMonth: number;
+  totalDeployments: number;
+}
+
 /**
  * AdminDashboard Component
  */
@@ -29,11 +40,36 @@ export function AdminDashboard() {
     error: null,
     selectedSegment: 'all',
   });
+  
+  const [realStats, setRealStats] = useState<RealStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Fetch metrics on mount and when segment changes
   useEffect(() => {
     fetchMetrics(state.selectedSegment);
   }, [state.selectedSegment]);
+  
+  // Fetch real stats from D1
+  useEffect(() => {
+    fetchRealStats();
+  }, []);
+  
+  const fetchRealStats = async () => {
+    setStatsLoading(true);
+    try {
+      const response = await fetch('/api/admin/stats');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setRealStats(data.data);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch real stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const fetchMetrics = async (segment: SegmentType) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -196,6 +232,65 @@ export function AdminDashboard() {
               selected={selectedSegment}
               onChange={handleSegmentChange}
             />
+
+            {/* Real Stats from D1 */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                </svg>
+                <h3 className="font-semibold text-gray-800">Data Real (D1)</h3>
+              </div>
+              {statsLoading ? (
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ) : realStats ? (
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total Projects</span>
+                    <span className="font-bold text-blue-600">{realStats.totalProjects}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">├ Draft</span>
+                    <span className="font-medium text-gray-500">{realStats.projectsByStatus.draft}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">├ Building</span>
+                    <span className="font-medium text-yellow-600">{realStats.projectsByStatus.building}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">└ Live</span>
+                    <span className="font-medium text-green-600">{realStats.projectsByStatus.live}</span>
+                  </div>
+                  <hr className="border-gray-100" />
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total Devices</span>
+                    <span className="font-bold text-purple-600">{realStats.totalDevices}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total Deployments</span>
+                    <span className="font-bold text-green-600">{realStats.totalDeployments}</span>
+                  </div>
+                  <hr className="border-gray-100" />
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Hari Ini</span>
+                    <span className="font-medium">{realStats.projectsCreatedToday}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Minggu Ini</span>
+                    <span className="font-medium">{realStats.projectsCreatedThisWeek}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Bulan Ini</span>
+                    <span className="font-medium">{realStats.projectsCreatedThisMonth}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">Gagal memuat data</p>
+              )}
+            </div>
 
             {/* Quick Stats */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
