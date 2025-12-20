@@ -8,7 +8,7 @@ import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
 import { getMetrics } from '../../../lib/db/events';
-import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse, addSecurityHeaders } from '../../../lib/security';
 
 export const prerender = false;
 
@@ -19,13 +19,13 @@ export const GET: APIRoute = async (context) => {
   const clientIP = getClientIP(request);
   const rateLimit = checkRateLimit(`stats:${clientIP}`, 30, 60000); // 30 requests per minute
   if (!rateLimit.allowed) {
-    return rateLimitResponse(rateLimit.resetIn);
+    return addSecurityHeaders(rateLimitResponse(rateLimit.resetIn));
   }
 
   // Admin authentication required
   if (!verifyAdminAuth(context, request)) {
     console.warn(`Unauthorized stats access attempt from IP: ${clientIP}`);
-    return unauthorizedResponse();
+    return addSecurityHeaders(unauthorizedResponse());
   }
 
   try {
@@ -39,7 +39,7 @@ export const GET: APIRoute = async (context) => {
     
     const totalProjects = (statusCounts.draft || 0) + (statusCounts.building || 0) + (statusCounts.live || 0);
     
-    return new Response(JSON.stringify({
+    return addSecurityHeaders(new Response(JSON.stringify({
       success: true,
       data: {
         totalProjects,
@@ -53,15 +53,15 @@ export const GET: APIRoute = async (context) => {
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-    });
+    }));
   } catch (error) {
     console.error('Stats API error:', error);
-    return new Response(JSON.stringify({
+    return addSecurityHeaders(new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch stats',
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
-    });
+    }));
   }
 };

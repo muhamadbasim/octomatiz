@@ -24,17 +24,24 @@ import { getDB } from '../../../lib/db/client';
 import { GET } from './analytics';
 
 // Helper to create mock Astro context
-function createMockContext(searchParams: Record<string, string> = {}) {
+function createMockContext(searchParams: Record<string, string> = {}, includeAuth = true) {
   const url = new URL('http://localhost/api/admin/analytics');
   Object.entries(searchParams).forEach(([key, value]) => {
     url.searchParams.set(key, value);
   });
   
-  // Create mock request with headers for rate limiting
+  // Create mock request with headers for rate limiting and auth
+  const headers = new Headers({
+    'x-forwarded-for': '127.0.0.1',
+  });
+  
+  // Add Authorization header for admin auth
+  if (includeAuth) {
+    headers.set('Authorization', 'Bearer test-admin-secret');
+  }
+  
   const mockRequest = {
-    headers: new Headers({
-      'x-forwarded-for': '127.0.0.1',
-    }),
+    headers,
   };
   
   return {
@@ -42,6 +49,7 @@ function createMockContext(searchParams: Record<string, string> = {}) {
       runtime: {
         env: {
           DB: {} as D1Database,
+          ADMIN_SECRET: 'test-admin-secret',
         },
       },
     },

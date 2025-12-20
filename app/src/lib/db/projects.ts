@@ -177,3 +177,24 @@ export async function countDevices(db: D1Database): Promise<number> {
   
   return result?.count || 0;
 }
+
+/**
+ * Verify that a device owns a project (including linked devices)
+ * Used for IDOR protection on update/delete operations
+ * @returns true if device owns the project, false otherwise
+ */
+export async function verifyProjectOwnership(
+  db: D1Database,
+  projectId: string,
+  deviceId: string
+): Promise<boolean> {
+  // Get the project
+  const project = await getProject(db, projectId);
+  if (!project) return false;
+  
+  // Get all device IDs linked to the requesting device
+  const linkedDeviceIds = await getLinkedDeviceIds(db, deviceId);
+  
+  // Check if project's device_id is in the linked devices
+  return linkedDeviceIds.includes(project.device_id);
+}

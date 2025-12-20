@@ -1,7 +1,7 @@
 // Single project API endpoint (GET, PUT, DELETE)
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
-import { getProject, updateProject, deleteProject, type UpdateProjectInput } from '../../../lib/db/projects';
+import { getProject, updateProject, deleteProject, verifyProjectOwnership, type UpdateProjectInput } from '../../../lib/db/projects';
 import { logEvent } from '../../../lib/db/events';
 import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
 import type { ApiResponse, DBProject } from '../../../types/database';
@@ -103,6 +103,21 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+    
+    // IDOR Protection: Verify device owns the project
+    if (deviceId) {
+      const isOwner = await verifyProjectOwnership(db, id, deviceId);
+      if (!isOwner) {
+        const response: ApiResponse<never> = {
+          success: false,
+          error: 'Anda tidak memiliki akses ke project ini',
+        };
+        return new Response(JSON.stringify(response), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
     
     const input: UpdateProjectInput = {
@@ -207,6 +222,17 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
       });
     }
     
+    // Get deviceId from request body or query params
+    let deviceId: string | null = null;
+    try {
+      const body = await request.json();
+      deviceId = body.deviceId || null;
+    } catch {
+      // No body or invalid JSON, try query params
+      const url = new URL(request.url);
+      deviceId = url.searchParams.get('deviceId');
+    }
+    
     // Get project to log event
     const existing = await getProject(db, id);
     if (!existing) {
@@ -218,6 +244,21 @@ export const DELETE: APIRoute = async ({ params, request, locals }) => {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+    
+    // IDOR Protection: Verify device owns the project
+    if (deviceId) {
+      const isOwner = await verifyProjectOwnership(db, id, deviceId);
+      if (!isOwner) {
+        const response: ApiResponse<never> = {
+          success: false,
+          error: 'Anda tidak memiliki akses ke project ini',
+        };
+        return new Response(JSON.stringify(response), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
     
     // Log delete event before deleting

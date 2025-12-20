@@ -143,6 +143,23 @@ export function addSecurityHeaders(response: Response): Response {
 }
 
 /**
+ * Wrapper to add security headers to API route handlers
+ * Use this to wrap your API route handler functions
+ * @example
+ * export const GET = withSecurityHeaders(async (context) => {
+ *   return new Response(JSON.stringify({ data: 'test' }));
+ * });
+ */
+export function withSecurityHeaders<T extends (...args: unknown[]) => Promise<Response>>(
+  handler: T
+): T {
+  return (async (...args: Parameters<T>): Promise<Response> => {
+    const response = await handler(...args);
+    return addSecurityHeaders(response);
+  }) as T;
+}
+
+/**
  * Sanitize string input to prevent XSS
  * Use for text content that will be displayed in HTML
  */

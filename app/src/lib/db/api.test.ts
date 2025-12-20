@@ -46,7 +46,7 @@ describe('Device Isolation', () => {
     fc.assert(
       fc.property(
         fc.array(fc.record({
-          id: fc.string({ minLength: 10, maxLength: 30 }),
+          id: fc.uuid(), // Use UUID to ensure unique IDs
           device_id: fc.constantFrom('device_a', 'device_b', 'device_c'),
           business_name: businessNameArb,
         }), { minLength: 5, maxLength: 20 }),

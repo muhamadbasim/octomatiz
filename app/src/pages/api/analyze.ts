@@ -3,6 +3,7 @@ import { analyzeImageWithGemini, type GeminiResult } from '../../lib/gemini';
 import { analyzeImageWithGroq } from '../../lib/groq';
 import type { BusinessCategory } from '../../types/project';
 import { checkRateLimit, rateLimitResponse, getClientIP } from '../../lib/security';
+import { validateImageForUpload } from '../../lib/imageValidation';
 
 export const prerender = false;
 
@@ -111,6 +112,23 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
+    // Validate image format and size (max 10MB)
+    const imageValidation = validateImageForUpload(body.image, 10);
+    if (!imageValidation.valid) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: {
+            code: 'INVALID_IMAGE',
+            message: imageValidation.error || 'Format gambar tidak valid',
+          },
+        } as GeminiResult),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     // Validate category
     const validCategories: BusinessCategory[] = ['kuliner', 'fashion', 'jasa', 'kerajinan'];

@@ -12,7 +12,7 @@
 import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { getSlugAnalytics, getAllAnalytics, type AnalyticsSummary } from '../../../lib/analytics';
-import { checkRateLimit, rateLimitResponse, getClientIP, isValidSlug, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP, isValidSlug, verifyAdminAuth, unauthorizedResponse, addSecurityHeaders } from '../../../lib/security';
 
 export const prerender = false;
 
@@ -24,13 +24,13 @@ export const GET: APIRoute = async (context) => {
   const clientIP = getClientIP(request);
   const rateLimit = checkRateLimit(`analytics:${clientIP}`, 30, 60000); // 30 requests per minute
   if (!rateLimit.allowed) {
-    return rateLimitResponse(rateLimit.resetIn);
+    return addSecurityHeaders(rateLimitResponse(rateLimit.resetIn));
   }
   
   // Admin authentication required
   if (!verifyAdminAuth(context, request)) {
     console.warn(`Unauthorized analytics access attempt from IP: ${clientIP}`);
-    return unauthorizedResponse();
+    return addSecurityHeaders(unauthorizedResponse());
   }
   
   try {
@@ -43,24 +43,24 @@ export const GET: APIRoute = async (context) => {
     
     // Validate slug if provided
     if (slug && !isValidSlug(slug)) {
-      return new Response(JSON.stringify({
+      return addSecurityHeaders(new Response(JSON.stringify({
         success: false,
         error: 'Format slug tidak valid',
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
-      });
+      }));
     }
     
     // Validate days parameter
     if (isNaN(days) || days < 1 || days > 365) {
-      return new Response(JSON.stringify({
+      return addSecurityHeaders(new Response(JSON.stringify({
         success: false,
         error: 'Parameter days harus antara 1-365',
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
-      });
+      }));
     }
 
     let data: AnalyticsSummary | AnalyticsSummary[];
@@ -80,7 +80,7 @@ export const GET: APIRoute = async (context) => {
       console.warn(`Analytics API slow response: ${responseTime}ms`);
     }
 
-    return new Response(JSON.stringify({
+    return addSecurityHeaders(new Response(JSON.stringify({
       success: true,
       data,
       meta: {
@@ -90,16 +90,16 @@ export const GET: APIRoute = async (context) => {
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
-    });
+    }));
   } catch (error) {
     console.error('Analytics API error:', error);
     
-    return new Response(JSON.stringify({
+    return addSecurityHeaders(new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : 'Gagal mengambil data analytics',
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
-    });
+    }));
   }
 };

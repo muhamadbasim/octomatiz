@@ -11,7 +11,7 @@ import { getMockDashboardMetrics } from '../../../lib/admin/mockData';
 import { getDB } from '../../../lib/db/client';
 import { getMetrics } from '../../../lib/db/events';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
-import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse } from '../../../lib/security';
+import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse, addSecurityHeaders } from '../../../lib/security';
 
 export const GET: APIRoute = async (context) => {
   const { request, locals } = context;
@@ -20,13 +20,13 @@ export const GET: APIRoute = async (context) => {
   const clientIP = getClientIP(request);
   const rateLimit = checkRateLimit(`metrics:${clientIP}`, 30, 60000);
   if (!rateLimit.allowed) {
-    return rateLimitResponse(rateLimit.resetIn);
+    return addSecurityHeaders(rateLimitResponse(rateLimit.resetIn));
   }
 
   // Admin authentication required
   if (!verifyAdminAuth(context, request)) {
     console.warn(`Unauthorized metrics access attempt from IP: ${clientIP}`);
-    return unauthorizedResponse();
+    return addSecurityHeaders(unauthorizedResponse());
   }
   
   try {
@@ -36,7 +36,7 @@ export const GET: APIRoute = async (context) => {
 
     // Validate segment
     if (!['all', 'basic', 'premium'].includes(segment)) {
-      return new Response(
+      return addSecurityHeaders(new Response(
         JSON.stringify({
           success: false,
           error: 'Invalid segment parameter. Must be "all", "basic", or "premium".',
@@ -45,7 +45,7 @@ export const GET: APIRoute = async (context) => {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         }
-      );
+      ));
     }
 
     let metrics: DashboardMetrics;
@@ -116,17 +116,17 @@ export const GET: APIRoute = async (context) => {
       data: metrics,
     };
 
-    return new Response(JSON.stringify(response), {
+    return addSecurityHeaders(new Response(JSON.stringify(response), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=60', // Cache for 1 minute
       },
-    });
+    }));
   } catch (error) {
     console.error('Error fetching admin metrics:', error);
 
-    return new Response(
+    return addSecurityHeaders(new Response(
       JSON.stringify({
         success: false,
         error: 'Internal server error',
@@ -135,6 +135,6 @@ export const GET: APIRoute = async (context) => {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       }
-    );
+    ));
   }
 };

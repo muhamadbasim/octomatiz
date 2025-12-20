@@ -1,5 +1,5 @@
 // Property tests for project CRUD operations
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as fc from 'fast-check';
 import { generateProjectId, nowISO } from './client';
 import type { DBProject } from '../../types/database';
@@ -188,5 +188,232 @@ describe('Timestamp Generation', () => {
         new Date(timestamps[i - 1]).getTime()
       );
     }
+  });
+});
+
+
+/**
+ * Property Test for Ownership Verification
+ * **Feature: security-hardening, Property 7: Project Ownership Verification**
+ * **Validates: Requirements 4.1, 4.2**
+ * 
+ * For any update or delete request where the requesting device does not own
+ * the project, the system should return HTTP 403 status.
+ */
+describe('verifyProjectOwnership - IDOR Protection', () => {
+  // Arbitrary generators for device and project IDs
+  const deviceIdArb = fc.stringMatching(/^device_[a-z0-9]{8,16}$/);
+  const projectIdArb = fc.stringMatching(/^proj_[0-9]+_[a-z0-9]+$/);
+
+  it('should return false for non-existent project', async () => {
+    // Mock DB that returns null for project
+    const db = {
+      prepare: vi.fn().mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(null),
+          all: vi.fn().mockResolvedValue({ results: [] }),
+        }),
+      }),
+    } as unknown as D1Database;
+    
+    const { verifyProjectOwnership } = await import('./projects');
+    
+    const result = await verifyProjectOwnership(db, 'non-existent-id', 'device-123');
+    expect(result).toBe(false);
+  });
+
+  it('should return true when device owns the project', async () => {
+    const deviceId = 'device-owner-123';
+    const projectId = 'proj_123';
+    
+    const mockProject = {
+      id: projectId,
+      device_id: deviceId,
+      business_name: 'Test Business',
+      status: 'draft',
+    };
+    
+    // Mock DB that returns project and device is in linked list
+    const db = {
+      prepare: vi.fn().mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(mockProject),
+          all: vi.fn().mockResolvedValue({ results: [{ id: deviceId }] }),
+        }),
+      }),
+    } as unknown as D1Database;
+    
+    const { verifyProjectOwnership } = await import('./projects');
+    
+    const result = await verifyProjectOwnership(db, projectId, deviceId);
+    expect(result).toBe(true);
+  });
+
+  it('should return false when device does not own the project', async () => {
+    const ownerDeviceId = 'device-owner-123';
+    const attackerDeviceId = 'device-attacker-456';
+    const projectId = 'proj_123';
+    
+    const mockProject = {
+      id: projectId,
+      device_id: ownerDeviceId,
+      business_name: 'Test Business',
+      status: 'draft',
+    };
+    
+    // Mock DB that returns project but attacker's device is not linked to owner
+    const db = {
+      prepare: vi.fn().mockReturnValue({
+        bind: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(mockProject),
+          all: vi.fn().mockResolvedValue({ results: [{ id: attackerDeviceId }] }),
+        }),
+      }),
+    } as unknown as D1Database;
+    
+    const { verifyProjectOwnership } = await import('./projects');
+    
+    const result = await verifyProjectOwnership(db, projectId, attackerDeviceId);
+    expect(result).toBe(false);
+  });
+
+  /**
+   * Property 7: For any device/project combination where device is the owner,
+   * verifyProjectOwnership should return true
+   */
+  it('property: owner device always has access', async () => {
+    await fc.assert(
+      fc.asyncProperty(deviceIdArb, projectIdArb, async (deviceId, projectId) => {
+        const mockProject = {
+          id: projectId,
+          device_id: deviceId,
+          business_name: 'Test',
+          status: 'draft',
+        };
+        
+        const db = {
+          prepare: vi.fn().mockReturnValue({
+            bind: vi.fn().mockReturnValue({
+              first: vi.fn().mockResolvedValue(mockProject),
+              all: vi.fn().mockResolvedValue({ results: [{ id: deviceId }] }),
+            }),
+          }),
+        } as unknown as D1Database;
+        
+        const { verifyProjectOwnership } = await import('./projects');
+        const result = await verifyProjectOwnership(db, projectId, deviceId);
+        
+        expect(result).toBe(true);
+        return true;
+      }),
+      { numRuns: 50 }
+    );
+  });
+
+  /**
+   * Property 7: For any device/project combination where device is NOT the owner
+   * and NOT linked, verifyProjectOwnership should return false
+   */
+  it('property: non-owner device is denied access', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        deviceIdArb,
+        deviceIdArb,
+        projectIdArb,
+        async (ownerDeviceId, attackerDeviceId, projectId) => {
+          // Ensure owner and attacker are different
+          fc.pre(ownerDeviceId !== attackerDeviceId);
+          
+          const mockProject = {
+            id: projectId,
+            device_id: ownerDeviceId,
+            business_name: 'Test',
+            status: 'draft',
+          };
+          
+          // Attacker's linked devices don't include owner
+          const db = {
+            prepare: vi.fn().mockReturnValue({
+              bind: vi.fn().mockReturnValue({
+                first: vi.fn().mockResolvedValue(mockProject),
+                all: vi.fn().mockResolvedValue({ results: [{ id: attackerDeviceId }] }),
+              }),
+            }),
+          } as unknown as D1Database;
+          
+          const { verifyProjectOwnership } = await import('./projects');
+          const result = await verifyProjectOwnership(db, projectId, attackerDeviceId);
+          
+          expect(result).toBe(false);
+          return true;
+        }
+      ),
+      { numRuns: 50 }
+    );
+  });
+
+  /**
+   * Property 7: For any non-existent project, verifyProjectOwnership should return false
+   */
+  it('property: non-existent project always returns false', async () => {
+    await fc.assert(
+      fc.asyncProperty(deviceIdArb, projectIdArb, async (deviceId, projectId) => {
+        const db = {
+          prepare: vi.fn().mockReturnValue({
+            bind: vi.fn().mockReturnValue({
+              first: vi.fn().mockResolvedValue(null),
+              all: vi.fn().mockResolvedValue({ results: [] }),
+            }),
+          }),
+        } as unknown as D1Database;
+        
+        const { verifyProjectOwnership } = await import('./projects');
+        const result = await verifyProjectOwnership(db, projectId, deviceId);
+        
+        expect(result).toBe(false);
+        return true;
+      }),
+      { numRuns: 50 }
+    );
+  });
+
+  /**
+   * Property 7: Linked devices should have access to each other's projects
+   */
+  it('property: linked device has access to project', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        deviceIdArb,
+        deviceIdArb,
+        projectIdArb,
+        async (ownerDeviceId, linkedDeviceId, projectId) => {
+          const mockProject = {
+            id: projectId,
+            device_id: ownerDeviceId,
+            business_name: 'Test',
+            status: 'draft',
+          };
+          
+          // Linked device's linked list includes the owner
+          const db = {
+            prepare: vi.fn().mockReturnValue({
+              bind: vi.fn().mockReturnValue({
+                first: vi.fn().mockResolvedValue(mockProject),
+                all: vi.fn().mockResolvedValue({ 
+                  results: [{ id: linkedDeviceId }, { id: ownerDeviceId }] 
+                }),
+              }),
+            }),
+          } as unknown as D1Database;
+          
+          const { verifyProjectOwnership } = await import('./projects');
+          const result = await verifyProjectOwnership(db, projectId, linkedDeviceId);
+          
+          expect(result).toBe(true);
+          return true;
+        }
+      ),
+      { numRuns: 50 }
+    );
   });
 });
