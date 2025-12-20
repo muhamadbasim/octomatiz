@@ -6,6 +6,32 @@ import type { ApiResponse, DBDevice } from '../../../types/database';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Debug: Check if runtime is available
+    const runtime = (locals as any).runtime;
+    if (!runtime) {
+      console.error('Runtime not available in locals');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Runtime not configured - ensure Cloudflare adapter is set up',
+        debug: { hasLocals: !!locals, localsKeys: Object.keys(locals || {}) }
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!runtime.env?.DB) {
+      console.error('D1 binding not found in runtime.env');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'D1 database not configured - add DB binding in Cloudflare Pages settings',
+        debug: { hasEnv: !!runtime.env, envKeys: Object.keys(runtime.env || {}) }
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
     const db = getDB(locals);
     const body = await request.json().catch(() => ({}));
     const { deviceId } = body as { deviceId?: string };
@@ -41,7 +67,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error('Device registration error:', error);
     const response: ApiResponse<never> = {
       success: false,
-      error: 'Gagal mendaftarkan device',
+      error: error instanceof Error ? error.message : 'Gagal mendaftarkan device',
     };
     return new Response(JSON.stringify(response), {
       status: 500,
