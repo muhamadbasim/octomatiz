@@ -11,7 +11,8 @@ export function Step2Capture() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState<string | null>(null);
   const [showTips, setShowTips] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -64,7 +65,11 @@ export function Step2Capture() {
   };
 
   const handleCapture = () => {
-    fileInputRef.current?.click();
+    cameraInputRef.current?.click();
+  };
+
+  const handleGallery = () => {
+    galleryInputRef.current?.click();
   };
 
   const handleContinue = async () => {
@@ -211,11 +216,21 @@ export function Step2Capture() {
 
   return (
     <div className="relative min-h-screen bg-background-dark">
+      {/* Camera input - with capture attribute for camera */}
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      
+      {/* Gallery input - without capture attribute for gallery access */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -274,7 +289,7 @@ export function Step2Capture() {
       {/* Bottom Controls */}
       <div className="absolute bottom-0 left-0 right-0 z-20 pb-10 pt-20 px-8 flex items-center justify-between bg-gradient-to-t from-background-dark/95 to-transparent">
         {/* Gallery Button */}
-        <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-1 group/btn">
+        <button onClick={handleGallery} className="flex flex-col items-center gap-1 group/btn">
           <div className="flex items-center justify-center size-12 rounded-full bg-surface-dark border border-white/10 text-white shadow-lg group-hover/btn:bg-primary/20 transition-all">
             <span className="material-symbols-outlined">photo_library</span>
           </div>
