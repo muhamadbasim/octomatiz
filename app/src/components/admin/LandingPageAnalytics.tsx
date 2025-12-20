@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { adminFetch } from '../../lib/api/adminApi';
 
 interface ClicksByDay {
   date: string;
@@ -36,7 +37,13 @@ export function LandingPageAnalytics({ isLoading: parentLoading }: LandingPageAn
     setError(null);
     
     try {
-      const response = await fetch(`/api/admin/analytics?days=${days}`);
+      const response = await adminFetch(`/api/admin/analytics?days=${days}`);
+      
+      if (response.status === 401) {
+        setError('Akses tidak diizinkan');
+        return;
+      }
+      
       const data = await response.json();
       
       if (data.success) {

@@ -20,6 +20,9 @@ import { LandingPageAnalytics } from './LandingPageAnalytics';
 // Import mock data for development
 import { getMockDashboardMetrics } from '../../lib/admin/mockData';
 
+// Import admin API helper
+import { adminFetch, hasAdminToken, promptForAdminToken, clearAdminToken } from '../../lib/api/adminApi';
+
 // Real stats from D1
 interface RealStats {
   totalProjects: number;
@@ -44,21 +47,44 @@ export function AdminDashboard() {
   
   const [realStats, setRealStats] = useState<RealStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
+
+  // Check for admin token on mount
+  useEffect(() => {
+    if (!hasAdminToken()) {
+      const hasToken = promptForAdminToken();
+      if (!hasToken) {
+        setNeedsAuth(true);
+      }
+    }
+  }, []);
 
   // Fetch metrics on mount and when segment changes
   useEffect(() => {
-    fetchMetrics(state.selectedSegment);
-  }, [state.selectedSegment]);
+    if (!needsAuth) {
+      fetchMetrics(state.selectedSegment);
+    }
+  }, [state.selectedSegment, needsAuth]);
   
   // Fetch real stats from D1
   useEffect(() => {
-    fetchRealStats();
-  }, []);
+    if (!needsAuth) {
+      fetchRealStats();
+    }
+  }, [needsAuth]);
   
   const fetchRealStats = async () => {
     setStatsLoading(true);
+    setStatsError(null);
     try {
-      const response = await fetch('/api/admin/stats');
+      const response = await adminFetch('/api/admin/stats');
+      if (response.status === 401) {
+        setStatsError('Akses tidak diizinkan');
+        clearAdminToken();
+        setNeedsAuth(true);
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {
@@ -67,6 +93,7 @@ export function AdminDashboard() {
       }
     } catch (error) {
       console.warn('Failed to fetch real stats:', error);
+      setStatsError('Gagal memuat data');
     } finally {
       setStatsLoading(false);
     }
@@ -77,7 +104,14 @@ export function AdminDashboard() {
 
     try {
       // Try to fetch from API first
-      const response = await fetch(`/api/admin/metrics?segment=${segment}`);
+      const response = await adminFetch(`/api/admin/metrics?segment=${segment}`);
+      
+      if (response.status === 401) {
+        clearAdminToken();
+        setNeedsAuth(true);
+        setState(prev => ({ ...prev, isLoading: false, error: 'Akses tidak diizinkan' }));
+        return;
+      }
       
       if (response.ok) {
         const data = await response.json();
@@ -115,7 +149,43 @@ export function AdminDashboard() {
     setState(prev => ({ ...prev, selectedSegment: segment }));
   };
 
+  const handleRetryAuth = () => {
+    const hasToken = promptForAdminToken();
+    if (hasToken) {
+      setNeedsAuth(false);
+    }
+  };
+
   const { metrics, isLoading, error, selectedSegment } = state;
+
+  // Auth required state
+  if (needsAuth) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 text-center">
+            <svg className="w-12 h-12 text-yellow-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Autentikasi Diperlukan</h2>
+            <p className="text-gray-600 mb-4">Masukkan Admin Secret untuk mengakses dashboard.</p>
+            <button
+              onClick={handleRetryAuth}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Masukkan Token
+            </button>
+            <a
+              href="/"
+              className="block mt-3 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Kembali ke Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Error state
   if (error && !metrics) {
