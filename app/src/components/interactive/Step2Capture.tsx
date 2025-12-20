@@ -89,28 +89,13 @@ export function Step2Capture() {
       console.log('AI API result:', result);
       
       if (result.success && result.data) {
-        // Save DIRECTLY to localStorage to avoid any race conditions
-        try {
-          const projectsData = localStorage.getItem('octomatiz_projects');
-          const projects = projectsData ? JSON.parse(projectsData) : [];
-          const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
-          
-          if (projectIndex >= 0) {
-            projects[projectIndex] = {
-              ...projects[projectIndex],
-              productImage: capturedImage,
-              headline: result.data.headline,
-              storytelling: result.data.storytelling,
-              currentStep: 3,
-              updatedAt: new Date().toISOString(),
-            };
-            
-            localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
-            console.log('Saved directly to localStorage:', projects[projectIndex]);
-          }
-        } catch (e) {
-          console.error('Error saving to localStorage:', e);
-        }
+        // Save via D1 API
+        await updateProject(currentProject.id, {
+          productImage: capturedImage,
+          headline: result.data.headline,
+          storytelling: result.data.storytelling,
+          currentStep: 3,
+        });
         
         // Navigate to step 3
         window.location.href = `/create/step-3?id=${currentProject.id}`;
@@ -125,29 +110,14 @@ export function Step2Capture() {
     }
   };
 
-  const handleSkipAI = () => {
+  const handleSkipAI = async () => {
     if (!capturedImage || !currentProject) return;
     
-    // Save DIRECTLY to localStorage
-    try {
-      const projectsData = localStorage.getItem('octomatiz_projects');
-      const projects = projectsData ? JSON.parse(projectsData) : [];
-      const projectIndex = projects.findIndex((p: { id: string }) => p.id === currentProject.id);
-      
-      if (projectIndex >= 0) {
-        projects[projectIndex] = {
-          ...projects[projectIndex],
-          productImage: capturedImage,
-          currentStep: 3,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        localStorage.setItem('octomatiz_projects', JSON.stringify(projects));
-        console.log('Saved image directly to localStorage (skip AI)');
-      }
-    } catch (e) {
-      console.error('Error saving to localStorage:', e);
-    }
+    // Save via D1 API
+    await updateProject(currentProject.id, {
+      productImage: capturedImage,
+      currentStep: 3,
+    });
     
     window.location.href = `/create/step-3?id=${currentProject.id}`;
   };

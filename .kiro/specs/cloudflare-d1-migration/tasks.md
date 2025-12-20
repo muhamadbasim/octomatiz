@@ -1,0 +1,128 @@
+# Implementation Plan
+
+- [x] 1. Set up Cloudflare D1 database
+  - [x] 1.1 Create D1 database and configure wrangler
+    - Run `wrangler d1 create octomatiz-db` to create database
+    - Add D1 binding to `wrangler.toml`
+    - Create `app/src/lib/db/schema.sql` with table definitions
+    - _Requirements: 1.1, 3.1_
+  - [x] 1.2 Create database types
+    - Create `app/src/types/database.ts` with DBProject, DBDevice, DBEvent interfaces
+    - _Requirements: 1.1_
+
+- [x] 2. Implement D1 client and data access layer
+  - [x] 2.1 Create D1 client wrapper
+    - Create `app/src/lib/db/client.ts` with D1 binding access
+    - Add helper functions for common queries
+    - _Requirements: 1.1_
+  - [x] 2.2 Implement device operations
+    - Create `app/src/lib/db/devices.ts`
+    - Implement: registerDevice, getDevice, updateLastSeen, generateLinkCode
+    - _Requirements: 2.1, 2.2_
+  - [x] 2.3 Write property test for device ID uniqueness
+    - **Property 5: Device ID Uniqueness**
+    - Test that generated device IDs are unique
+    - **Validates: Requirements 2.1**
+  - [x] 2.4 Implement project CRUD operations
+    - Create `app/src/lib/db/projects.ts`
+    - Implement: createProject, getProject, updateProject, deleteProject, listProjects
+    - _Requirements: 1.1, 1.2, 1.3, 1.4_
+  - [x] 2.5 Write property test for project CRUD consistency
+    - **Property 1: Project CRUD Consistency**
+    - Test that saved data matches fetched data
+    - **Validates: Requirements 1.1, 1.2**
+  - [x] 2.6 Implement event logging
+    - Create `app/src/lib/db/events.ts`
+    - Implement: logEvent, getProjectEvents, getMetrics
+    - _Requirements: 3.1, 3.2, 3.3_
+
+- [x] 3. Checkpoint - Ensure all database tests pass
+  - All 15 database tests pass
+
+- [x] 4. Create API routes
+  - [x] 4.1 Create device registration endpoint
+    - Create `app/src/pages/api/device/register.ts`
+    - POST: Generate device ID, save to D1, return ID
+    - _Requirements: 2.1_
+  - [x] 4.2 Create projects list/create endpoint
+    - Create `app/src/pages/api/projects/index.ts`
+    - GET: List projects by device ID
+    - POST: Create new project
+    - _Requirements: 1.1, 1.3, 2.3_
+  - [x] 4.3 Write property test for device isolation
+    - **Property 2: Device Isolation**
+    - Test that projects are only visible to correct device
+    - **Validates: Requirements 2.2, 2.3**
+  - [x] 4.4 Create single project endpoint
+    - Create `app/src/pages/api/projects/[id].ts`
+    - GET: Get project by ID
+    - PUT: Update project
+    - DELETE: Delete project
+    - _Requirements: 1.2, 1.4_
+  - [x] 4.5 Create migration endpoint
+    - Create `app/src/pages/api/migrate.ts`
+    - POST: Accept localStorage data, save to D1
+    - _Requirements: 4.1, 4.2_
+  - [x] 4.6 Write property test for migration data integrity
+    - **Property 3: Migration Data Integrity**
+    - Test that migrated data matches original localStorage data
+    - **Validates: Requirements 4.2**
+
+- [x] 5. Checkpoint - Ensure all API tests pass
+  - All 110 tests pass (including 15 database + API tests)
+
+- [x] 6. Create client-side API wrapper and hooks
+  - [x] 6.1 Create API client wrapper
+    - Create `app/src/lib/api/projectsApi.ts`
+    - Implement fetch wrapper with error handling
+    - _Requirements: 5.3_
+  - [x] 6.2 Create useDevice hook
+    - Create `app/src/hooks/useDevice.ts`
+    - Handle device ID generation and storage
+    - Auto-register device on first use
+    - _Requirements: 2.1_
+  - [x] 6.3 Create useProjects hook
+    - Create `app/src/hooks/useProjects.ts`
+    - Replace localStorage-based useProject hook
+    - Handle loading states and errors
+    - _Requirements: 1.3, 5.1, 5.2_
+
+- [x] 7. Update existing components to use D1
+  - [x] 7.1 Update DashboardContent component
+    - Modify `app/src/components/interactive/DashboardContent.tsx`
+    - Use useProjects hook instead of localStorage
+    - Add loading skeleton
+    - _Requirements: 1.3, 5.1_
+  - [x] 7.2 Update Step1Form component
+    - Modify `app/src/components/interactive/Step1Form.tsx`
+    - Save to D1 via API instead of localStorage
+    - _Requirements: 1.1, 1.2_
+  - [x] 7.3 Update remaining step components
+    - Update Step2Capture, Step3Review, Step4Design, Step5Deploy
+    - Use D1 API for all data operations
+    - _Requirements: 1.2_
+
+- [x] 8. Implement localStorage migration
+  - [x] 8.1 Create migration utility
+    - Create `app/src/lib/migration.ts`
+    - Detect localStorage data, transform to D1 format, call migrate API
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [x] 8.2 Add migration trigger to app initialization
+    - Modify `app/src/context/ProjectContext.tsx`
+    - Check for localStorage data on mount, trigger migration
+    - Show migration progress/status
+    - _Requirements: 4.1, 4.2_
+
+- [x] 9. Update Admin Dashboard with real data
+  - [x] 9.1 Update metrics API to use D1
+    - Modify `app/src/pages/api/admin/metrics.ts`
+    - Query real data from D1 instead of mock data
+    - _Requirements: 3.4_
+  - [x] 9.2 Write property test for metrics aggregation
+    - **Property 4: Metrics Aggregation Accuracy**
+    - Test that metrics counts match actual project counts
+    - **Validates: Requirements 3.4**
+
+- [x] 10. Final Checkpoint - Ensure all tests pass
+  - All 114 tests pass
+
