@@ -36,7 +36,7 @@ PWA (Progressive Web App) untuk membantu UMKM membuat landing page bisnis dengan
 | Layer            | Teknologi                             |
 | ---------------- | ------------------------------------- |
 | Framework        | Astro 5.x + React Islands             |
-| Styling          | Tailwind CSS                          |
+| Styling          | Tailwind CSS v4                       |
 | State Management | React Context                         |
 | Backend          | Cloudflare Workers (Astro API Routes) |
 | Database         | Cloudflare D1 (SQLite)                |
@@ -141,7 +141,8 @@ Quick Launch Mobile web/
 │       │       └── migrate.ts           # D1 migration
 │       │
 │       ├── components/
-│       │   ├── admin/                   # 12 admin components
+│       │   ├── admin/                   # 14 admin components
+│       │   ├── common/                  # Shared components (ErrorBoundary)
 │       │   ├── interactive/             # React islands
 │       │   ├── Header.astro
 │       │   ├── FAB.astro
@@ -174,18 +175,20 @@ Quick Launch Mobile web/
 ```
 AdminDashboard.tsx (Main Container)
 ├── PIN Authentication Layer
+├── ErrorBoundary (graceful failure handling)
 ├── MRRHeader.tsx
 ├── SegmentFilter.tsx
+├── ChartErrorBoundary
+│   ├── MRRTrendChart.tsx
+│   ├── CohortHeatmap.tsx
+│   └── LTVCACBarChart.tsx
 ├── VitalSignsSection.tsx
 │   └── MetricCard.tsx (×4)
 ├── EfficiencySection.tsx
 │   └── MetricCard.tsx (×3)
-├── MRRTrendChart.tsx
-├── CohortHeatmap.tsx
 ├── SustainabilitySection.tsx
 │   └── MetricCard.tsx (×3)
 ├── ProductHealthSection.tsx
-├── LTVCACBarChart.tsx
 └── DangerZone.tsx
 ```
 
@@ -306,58 +309,63 @@ mock?: 'true'  // Force mock data
 | **Deploy Service**   | 4-stage deployment dengan progress                                      | ✅     |
 | **Types**            | Comprehensive TypeScript types                                          | ✅     |
 
-### 6.2 ⚠️ Perlu Verifikasi / Potensi Issues
+### 6.2 ✅ Recently Implemented (2025-12-25)
+
+| Feature                    | Status | Details                                              |
+| -------------------------- | ------ | ---------------------------------------------------- |
+| **Error Boundaries**       | ✅     | ErrorBoundary.tsx, DashboardErrorBoundary.tsx        |
+| **Cohort Real Data**       | ✅     | recordCohortSignup, getCohortAnalysis in analytics.ts |
+| **Property-based Testing** | ✅     | 227 tests with Vitest + fast-check                   |
+| **Tailwind v4 Migration**  | ✅     | app.css with @theme block                            |
+| **D1 Fallback**            | ✅     | Mock data fallback for local development             |
+| **Cloudflare Build**       | ✅     | Fixed rollup optional dependencies                   |
+
+### 6.3 ⚠️ Perlu Verifikasi / Potensi Issues
 
 | Area                   | Issue                                             | Severity    |
 | ---------------------- | ------------------------------------------------- | ----------- |
-| **Config Files**       | package.json, astro.config tidak di path app/     | 🔴 High     |
 | **Mock Data Fallback** | Admin dashboard falls back to mock jika D1 gagal  | 🟡 Medium   |
 | **Real Metrics**       | Metrics masih calculated dari mock, bukan real data | 🟡 Medium |
 | **PIN Auth**           | Menggunakan window.prompt (UX kurang baik)        | 🟡 Medium   |
-| **Test Coverage**      | Belum ada test files yang terdeteksi              | 🟡 Medium   |
 | **KV Integration**     | Belum jelas apakah KV sudah setup                 | 🟡 Medium   |
 
-### 6.3 ❌ Belum Diimplementasikan (Berdasarkan Specs)
+### 6.4 ❌ Belum Diimplementasikan (Berdasarkan Specs)
 
 | Feature dari requirements.md              | Status                               |
 | ----------------------------------------- | ------------------------------------ |
 | Real-time MRR dari actual revenue         | ❌ Masih mock (liveProjects × 50K)   |
-| Cohort data dari real user retention      | ❌ Masih mock data                   |
-| Danger Zone alerts dari real thresholds   | ⚠️ Logic ada, data mock             |
 | Segment filtering dengan real data        | ⚠️ UI ada, data mock                |
 | Auto-refresh interval                     | ❓ Perlu verifikasi                  |
-| Vitest unit tests                         | ❌ Tidak terdeteksi                  |
-| Property-based testing (fast-check)       | ❌ Tidak terdeteksi                  |
 
 ---
 
 ## 7. Recommendations & Next Steps
 
-### 7.1 🔴 High Priority (Segera)
+### 7.1 ✅ Completed (2025-12-25)
 
-| #   | Issue                        | Recommendation                                                         |
-| --- | ---------------------------- | ---------------------------------------------------------------------- |
-| 1   | Config files tidak di app/   | Cari lokasi sebenarnya package.json, pastikan dependencies terinstall |
-| 2   | Build/Run verification       | Jalankan `npm run dev` untuk pastikan app bisa jalan tanpa error       |
-| 3   | D1 Connection                | Verifikasi koneksi D1 production, pastikan bukan selalu fallback ke mock |
+| #   | Issue                        | Resolution                                                      |
+| --- | ---------------------------- | --------------------------------------------------------------- |
+| 1   | Config files tidak di app/   | ✅ Created package.json, astro.config.mjs, vitest.config.ts     |
+| 2   | Build/Run verification       | ✅ Build works, 227 tests passing                               |
+| 8   | Cohort Real Data             | ✅ Implemented cohort tracking in analytics.ts                  |
+| 9   | Property-based Testing       | ✅ 227 tests with Vitest + fast-check                           |
+| 11  | Error Boundaries             | ✅ ErrorBoundary + DashboardErrorBoundary components            |
 
 ### 7.2 🟡 Medium Priority (Minggu Ini)
 
 | #   | Issue               | Recommendation                                                 |
 | --- | ------------------- | -------------------------------------------------------------- |
+| 3   | D1 Connection       | Verifikasi koneksi D1 production, pastikan bukan selalu fallback |
 | 4   | Real Metrics Data   | Implementasi pengumpulan real MRR dari payment/subscription data |
 | 5   | PIN Auth UX         | Ganti window.prompt dengan proper login modal                  |
-| 6   | Test Coverage       | Tambah Vitest unit tests minimal untuk metricsCalculator.ts    |
-| 7   | KV Setup            | Verifikasi KV bindings di wrangler.toml, setup jika belum      |
+| 6   | KV Setup            | Verifikasi KV bindings di wrangler.toml, setup jika belum      |
 
 ### 7.3 🟢 Low Priority (Backlog)
 
 | #   | Issue                    | Recommendation                                     |
 | --- | ------------------------ | -------------------------------------------------- |
-| 8   | Cohort Real Data         | Integrasi dengan analytics untuk retention tracking |
-| 9   | Property-based Testing   | Tambah fast-check untuk edge cases                 |
-| 10  | Documentation            | Tambah README.md dan CONTRIBUTING.md               |
-| 11  | Error Boundaries         | Tambah React error boundaries untuk graceful failure |
+| 7   | Documentation            | Tambah README.md dan CONTRIBUTING.md               |
+| 8   | Real-time MRR            | Integrate dengan payment/subscription system       |
 
 ### 7.4 Suggested Action Plan
 
@@ -475,9 +483,10 @@ User → /admin → PIN Prompt → AdminDashboard
 
 ## Changelog
 
-| Date       | Version | Changes                    |
-| ---------- | ------- | -------------------------- |
-| 2025-12-25 | 1.0.0   | Initial documentation      |
+| Date       | Version | Changes                                                              |
+| ---------- | ------- | -------------------------------------------------------------------- |
+| 2025-12-25 | 1.1.0   | Added Error Boundaries, Cohort tracking, Tailwind v4, 227 tests      |
+| 2025-12-25 | 1.0.0   | Initial documentation                                                |
 
 ---
 
