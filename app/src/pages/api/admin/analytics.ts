@@ -63,6 +63,34 @@ export const GET: APIRoute = async (context) => {
       }));
     }
 
+    // If no D1 available (local dev), return mock data
+    if (!db) {
+      const mockData = {
+        slug: slug || 'all',
+        totalClicks: 156,
+        uniqueVisitors: 89,
+        clicksByDay: Array.from({ length: Math.min(days, 7) }, (_, i) => ({
+          date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          clicks: Math.floor(Math.random() * 20) + 5
+        })).reverse(),
+        topReferrers: [
+          { referrer: 'google.com', count: 45 },
+          { referrer: 'instagram.com', count: 32 },
+          { referrer: 'direct', count: 28 }
+        ],
+        _mock: true
+      };
+      
+      return addSecurityHeaders(new Response(JSON.stringify({
+        success: true,
+        data: slug ? mockData : [mockData],
+        meta: { days, responseTimeMs: Date.now() - startTime, _mock: true },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }));
+    }
+
     let data: AnalyticsSummary | AnalyticsSummary[];
     
     if (slug) {
