@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Step2Wrapper } from '../../components/interactive/Step2Wrapper';
+
+export const prerender = true;
+---
+
+<BaseLayout title="AI Capture" showNav={false}>
+  <Step2Wrapper client:load />
+</BaseLayout>
+
+<style>
+  @keyframes scan {
+    0% { top: 0; }
+    50% { top: calc(100% - 4px); }
+    100% { top: 0; }
+  }
+  :global(.animate-scan) {
+    animation: scan 2s ease-in-out infinite;
+  }
+</style>

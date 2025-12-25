@@ -1,0 +1,60 @@
+---
+import { OfflineIndicator } from './interactive/OfflineIndicator';
+
+interface Props {
+  showBack?: boolean;
+  title?: string;
+  step?: string;
+}
+
+const { showBack = false, title, step } = Astro.props;
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#112117]/90 backdrop-blur-md border-b border-white/5 transition-all duration-300">
+  <div class="flex items-center justify-between px-4 py-3 max-w-md mx-auto w-full">
+    {showBack ? (
+      <a href="javascript:history.back()" class="text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </a>
+    ) : (
+      <div class="flex items-center gap-2">
+        <div class="bg-primary/20 p-1.5 rounded-lg">
+          <img src="/favicon.svg" alt="OCTOmatiz" class="w-5 h-5" />
+        </div>
+        <h1 class="text-white text-lg font-bold tracking-tight">OCTOmatiz</h1>
+        {import.meta.env.DEV && (
+          <span class="text-[8px] bg-amber-500 text-black px-1.5 py-0.5 rounded font-bold uppercase">Preview</span>
+        )}
+      </div>
+    )}
+    
+    {title && (
+      <h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">{title}</h2>
+    )}
+    
+    {step && (
+      <div class="flex items-center justify-center bg-black/30 px-3 py-1 rounded-full border border-white/10">
+        <p class="text-primary text-sm font-bold tracking-wide">{step}</p>
+      </div>
+    )}
+    
+    {!showBack && !title && (
+      <div class="flex items-center gap-3">
+        <!-- Connection Status (React Island) -->
+        <div class="hidden xs:flex">
+          <OfflineIndicator client:idle />
+        </div>
+        <!-- Profile -->
+        <div class="relative group cursor-pointer">
+          <div class="h-9 w-9 rounded-full overflow-hidden border border-white/10 ring-2 ring-transparent group-hover:ring-primary/50 transition-all">
+            <img 
+              alt="Profile" 
+              class="h-full w-full object-cover" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaxCWxBTKODiQ-UFh85YPHnvQVap5EuQen-lmTHhyuVdTwO99UqwETt9_ChlJAtxOMlvuxo41NiFRrfCtBO7ZEaFxi8qUaxIpva4cbEE4D-m4SxREOUvnlMfA1cIFVnW2rTFwoTSJOfW6kYp4Uua8HOCdb3G4Q_6U27BJfO-HgKHTYQR72SqrGVxsJCjEiEnx1HSLRS4o_p5zQy9sWeQcB4Ikr-pIzEpH1ewPlt9Kt5hWMlqcKgkwxV3dxdJBi9VZdxl6r8NY0DUUk"
+            />
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</header>

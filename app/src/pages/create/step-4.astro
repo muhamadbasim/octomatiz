@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import { Step4Wrapper } from '../../components/interactive/Step4Wrapper';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Design & Theme" showNav={false}>
+  <Header showBack title="Langkah 4: Desain" />
+  <Step4Wrapper client:load />
+</BaseLayout>

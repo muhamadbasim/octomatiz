@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import { Step3Wrapper } from '../../components/interactive/Step3Wrapper';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Content Review" showNav={false}>
+  <Header showBack title="Review Konten" step="3/4" />
+  <Step3Wrapper client:load />
+</BaseLayout>

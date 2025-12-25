@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import { Step5Wrapper } from '../../components/interactive/Step5Wrapper';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Deployment" showNav={false}>
+  <Header showBack title="Status Deployment" />
+  
+  <div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col overflow-x-hidden pt-16">
+    <Step5Wrapper client:load />
+  </div>
+</BaseLayout>

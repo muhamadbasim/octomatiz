@@ -1,0 +1,19 @@
+---
+interface Props {
+  label: string;
+  value: string;
+  color: 'primary' | 'blue';
+}
+
+const { label, value, color } = Astro.props;
+const colorClasses = {
+  primary: 'bg-primary/10 group-hover:bg-primary/20',
+  blue: 'bg-blue-500/10 group-hover:bg-blue-500/20',
+};
+---
+
+<div class="card p-4 relative overflow-hidden group">
+  <div class={`absolute -right-2 -top-2 w-16 h-16 rounded-full blur-xl transition-all ${colorClasses[color]}`}></div>
+  <p class="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">{label}</p>
+  <p class={`text-2xl font-bold ${color === 'primary' ? 'text-primary' : 'text-white'}`}>{value}</p>
+</div>
