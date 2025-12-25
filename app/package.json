@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:cf": "rm -rf node_modules/.cache && astro build",
     "preview": "astro preview",
     "deploy": "wrangler pages deploy ./dist",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.0.0"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.0.0",
