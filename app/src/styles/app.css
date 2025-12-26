@@ -1,0 +1,83 @@
+/* Google Fonts - MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #36e27b;
+  --color-primary-hover: #2dbd66;
+  --color-background-dark: #112117;
+  --color-background-light: #f8faf9;
+  --color-surface-dark: #1a2f23;
+  --color-border-dark: #2a3f33;
+  --color-text-muted: #94a3b8;
+  
+  --font-display: 'Spline Sans', sans-serif;
+  --font-body: 'Noto Sans', sans-serif;
+  
+  --animate-shake: shake 0.5s ease-in-out;
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
+  }
+}
+
+/* Base Styles */
+body {
+  @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased;
+  min-height: 100dvh;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Components */
+.btn-primary {
+  @apply flex items-center justify-center gap-2 rounded-full h-14 bg-primary text-background-dark font-bold 
+         shadow-lg shadow-primary/20 hover:bg-primary-hover transition-all active:scale-[0.98];
+}
+
+.btn-secondary {
+  @apply flex items-center justify-center gap-2 rounded-full h-12 bg-white/5 hover:bg-white/10 
+         text-white border border-white/10 transition-colors;
+}
+
+.card {
+  @apply bg-surface-dark rounded-xl border border-white/5 shadow-lg;
+}
+
+.input-field {
+  @apply w-full rounded-xl bg-white dark:bg-surface-dark border border-gray-300 dark:border-border-dark 
+         text-slate-900 dark:text-white h-14 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50 
+         focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-text-muted;
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #112117;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}

@@ -16,6 +16,7 @@ import { LTVCACBarChart } from './LTVCACBarChart';
 import { DangerZone } from './DangerZone';
 import { SegmentFilter } from './SegmentFilter';
 import { LandingPageAnalytics } from './LandingPageAnalytics';
+import { DashboardErrorBoundary, ChartErrorBoundary } from './DashboardErrorBoundary';
 
 // Import mock data for development
 import { getMockDashboardMetrics } from '../../lib/admin/mockData';
@@ -260,34 +261,44 @@ export function AdminDashboard() {
             />
 
             {/* MRR Trend Chart */}
-            <MRRTrendChart
-              data={metrics?.mrrTrend ?? []}
-              isLoading={isLoading}
-            />
+            <ChartErrorBoundary chartName="MRR Trend">
+              <MRRTrendChart
+                data={metrics?.mrrTrend ?? []}
+                isLoading={isLoading}
+              />
+            </ChartErrorBoundary>
 
             {/* Cohort Heatmap */}
-            <CohortHeatmap
-              data={metrics?.cohortAnalysis ?? { cohorts: [], months: [] }}
-              isLoading={isLoading}
-            />
+            <ChartErrorBoundary chartName="Cohort Heatmap">
+              <CohortHeatmap
+                data={metrics?.cohortAnalysis ?? { cohorts: [], months: [] }}
+                isLoading={isLoading}
+              />
+            </ChartErrorBoundary>
 
             {/* Sustainability & Product Health */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SustainabilitySection
-                metrics={metrics?.sustainability ?? { paybackPeriod: 0, burnRate: 0, cashRunway: 0, burnRateTrend: [] }}
-                isLoading={isLoading}
-              />
-              <ProductHealthSection
-                metrics={metrics?.product ?? { arpu: 0, arpuBySegment: { basic: 0, premium: 0 }, dauMauRatio: 0, arpuChange: 0 }}
-                isLoading={isLoading}
-              />
+              <DashboardErrorBoundary sectionName="Sustainability">
+                <SustainabilitySection
+                  metrics={metrics?.sustainability ?? { paybackPeriod: 0, burnRate: 0, cashRunway: 0, burnRateTrend: [] }}
+                  isLoading={isLoading}
+                />
+              </DashboardErrorBoundary>
+              <DashboardErrorBoundary sectionName="Product Health">
+                <ProductHealthSection
+                  metrics={metrics?.product ?? { arpu: 0, arpuBySegment: { basic: 0, premium: 0 }, dauMauRatio: 0, arpuChange: 0 }}
+                  isLoading={isLoading}
+                />
+              </DashboardErrorBoundary>
             </div>
 
             {/* LTV:CAC Bar Chart */}
-            <LTVCACBarChart
-              data={metrics?.ltvCacBySegment ?? []}
-              isLoading={isLoading}
-            />
+            <ChartErrorBoundary chartName="LTV:CAC Chart">
+              <LTVCACBarChart
+                data={metrics?.ltvCacBySegment ?? []}
+                isLoading={isLoading}
+              />
+            </ChartErrorBoundary>
           </div>
 
           {/* Sidebar - 1 column on desktop */}

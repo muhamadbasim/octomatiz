@@ -3,6 +3,7 @@ import type { APIRoute } from 'astro';
 import { getDB } from '../../../lib/db/client';
 import { registerDevice, getDevice, updateLastSeen } from '../../../lib/db/devices';
 import { checkRateLimit, rateLimitResponse, getClientIP } from '../../../lib/security';
+import { recordCohortEvent, getCohortMonth, recordUserActivity } from '../../../lib/analytics';
 import type { ApiResponse, DBDevice } from '../../../types/database';
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -45,6 +46,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { deviceId } = body as { deviceId?: string };
     
     let device: DBDevice;
+    let isNewDevice = false;
+    const kv = runtime.env?.KV as KVNamespace | undefined;
     
     if (deviceId) {
       // Check if device exists
@@ -53,13 +56,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // Update last seen and return existing device
         await updateLastSeen(db, deviceId);
         device = { ...existing, last_seen_at: new Date().toISOString() };
+        
+        // Record activity for retention tracking
+        recordUserActivity(db, kv, deviceId);
       } else {
         // Device ID provided but not found, register new
         device = await registerDevice(db);
+        isNewDevice = true;
       }
     } else {
       // No device ID, register new
       device = await registerDevice(db);
+      isNewDevice = true;
+    }
+    
+    // Record cohort signup event for new devices
+    if (isNewDevice) {
+      const now = new Date();
+      recordCohortEvent(db, kv, {
+        deviceId: device.id,
+        eventType: 'signup',
+        timestamp: now.toISOString(),
+        cohortMonth: getCohortMonth(now),
+      });
     }
     
     const response: ApiResponse<DBDevice> = {

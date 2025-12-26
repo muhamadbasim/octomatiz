@@ -2,12 +2,19 @@
 import type { DBDevice, DBProject, DBEvent } from '../../types/database';
 
 // Get D1 binding from Astro context
-export function getDB(locals: App.Locals): D1Database {
+// Returns null if D1 is not available (local dev without wrangler)
+export function getDB(locals: App.Locals): D1Database | null {
   const runtime = locals.runtime;
   if (!runtime?.env?.DB) {
-    throw new Error('D1 database binding not found');
+    console.warn('D1 database binding not found - using mock data');
+    return null;
   }
   return runtime.env.DB;
+}
+
+// Check if D1 is available
+export function hasDB(locals: App.Locals): boolean {
+  return !!locals.runtime?.env?.DB;
 }
 
 // Helper to convert D1 result to typed array

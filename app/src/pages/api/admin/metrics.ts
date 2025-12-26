@@ -12,6 +12,7 @@ import { getDB } from '../../../lib/db/client';
 import { getMetrics } from '../../../lib/db/events';
 import { countProjectsByStatus, countDevices } from '../../../lib/db/projects';
 import { checkRateLimit, rateLimitResponse, getClientIP, verifyAdminAuth, unauthorizedResponse, addSecurityHeaders } from '../../../lib/security';
+import { getCohortAnalysis } from '../../../lib/analytics';
 
 export const GET: APIRoute = async (context) => {
   const { request, locals } = context;
@@ -61,6 +62,10 @@ export const GET: APIRoute = async (context) => {
         const statusCounts = await countProjectsByStatus(db);
         const deviceCount = await countDevices(db);
         
+        // Get real cohort analysis
+        const kv = (locals as { runtime?: { env?: { KV?: KVNamespace } } }).runtime?.env?.KV;
+        const cohortAnalysis = await getCohortAnalysis(db, kv, 6);
+        
         // Get mock metrics as base structure
         const mockMetrics = getMockDashboardMetrics(segment);
         
@@ -93,6 +98,8 @@ export const GET: APIRoute = async (context) => {
             projectsCreated: totalProjects,
             deploymentSuccessRate: totalProjects > 0 ? (liveProjects / totalProjects) * 100 : 0,
           },
+          // Use real cohort data
+          cohort: cohortAnalysis,
         };
         
         // Add real project stats to response

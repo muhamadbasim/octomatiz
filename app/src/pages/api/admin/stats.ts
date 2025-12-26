@@ -31,6 +31,26 @@ export const GET: APIRoute = async (context) => {
   try {
     const db = getDB(locals);
     
+    // If no D1 available (local dev), return mock data
+    if (!db) {
+      return addSecurityHeaders(new Response(JSON.stringify({
+        success: true,
+        data: {
+          totalProjects: 15,
+          projectsByStatus: { draft: 5, building: 3, live: 7 },
+          totalDevices: 12,
+          projectsCreatedToday: 2,
+          projectsCreatedThisWeek: 8,
+          projectsCreatedThisMonth: 15,
+          totalDeployments: 7,
+          _mock: true
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }));
+    }
+    
     const [statusCounts, deviceCount, metrics] = await Promise.all([
       countProjectsByStatus(db),
       countDevices(db),
